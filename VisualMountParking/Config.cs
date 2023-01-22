@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.IO;
@@ -24,6 +21,8 @@ namespace ChekMountPosition
 		public CommandUri LightOnCommand { get; set; }
 		public CommandUri LightOffCommand { get; set; }
 
+		public enum ImageSourceType { File, URL }
+
 
 		//--------------------
 		private static string GetDefaultFilename()
@@ -37,20 +36,14 @@ namespace ChekMountPosition
 
 		public void Save()
 		{
-			Save(GetDefaultFilename());
-		}
-		public void Save(string filename)
-		{
+			var filename =  GetDefaultFilename();		
 			string jsonString = JsonSerializer.Serialize(this);
 			File.WriteAllText(filename, jsonString);
 		}
 
 		public static Config Load()
 		{
-			return Load(GetDefaultFilename());
-		}
-		public static Config Load(string filename)
-		{
+			var filename = GetDefaultFilename();	
 			Config cfg;
 			if (File.Exists(filename))
 			{
@@ -72,8 +65,4 @@ namespace ChekMountPosition
 			return newcfg;
 		}
 	}
-
-	public enum ImageSourceType { File, URL }
-
-
 }
