@@ -1,4 +1,4 @@
-# Parking the visual mount
+# Astro mount visual parking
 Accurately park a remote astronomical mount using a security camera
 
 I am an astrophotographer and use a remote observatory with a sliding roof.
