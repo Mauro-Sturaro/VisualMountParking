@@ -1,4 +1,5 @@
 ﻿using Accord.Controls;
+using ASCOM.DriverAccess;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ChekMountPosition
+namespace VisualMountParking
 {
 	public partial class SettingsForm : Form
 	{
@@ -29,18 +30,22 @@ namespace ChekMountPosition
 			picPreview.Image = img;
 		}
 
-		private void button1_Click(object sender, EventArgs e)
-		{
-		 	DialogResult= DialogResult.OK;
+		private void btSave_Click(object sender, EventArgs e)
+		{			
+		 	DialogResult= DialogResult.OK;			
 			Config.Save();
 			this.Close();
 		}
 
 		private void SettingsForm_Load(object sender, EventArgs e)
 		{
+			txtRaStep.Text = Config.MoveRaStep.ToString();
+			txtDecStep.Text = Config.MoveDecStep.ToString();
+
 			cmbSourceType.SelectedIndex = (int)Config.SourceType;
 			txtRegionsCount.Text = Config.Templates.Count.ToString();
 			txtSource.Text = Config.Source;
+			txtTelescopeDriver.Text = Config.TelescopeDriver;
 		}
 
 		private void txtSource_Validated(object sender, EventArgs e)
@@ -84,6 +89,38 @@ namespace ChekMountPosition
 					Config.LightOffCommand = form.Command;
 				}
 			}
+		}
+
+		private void btExportPreview_Click(object sender, EventArgs e)
+		{
+			using(var dlg = new SaveFileDialog())
+			{
+				dlg.Filter =  "png file (*.png)|*.png";
+				dlg.FileName = "PreviewImage.png";
+				if(dlg.ShowDialog() == DialogResult.OK)
+				{
+					picPreview.Image.Save(dlg.FileName);
+				}
+			}
+		}
+
+		private void btTelescopeChoose_Click(object sender, EventArgs e)
+		{
+			var progId = Telescope.Choose(Config.TelescopeDriver);
+			if (string.IsNullOrEmpty(progId))
+				return;
+			txtTelescopeDriver.Text = progId;
+			Config.TelescopeDriver = progId;
+		}
+
+		private void txtRaStep_TextChanged(object sender, EventArgs e)
+		{
+			Config.MoveRaStep = int.Parse(txtRaStep.Text);
+		}
+
+		private void txtDecStep_TextChanged(object sender, EventArgs e)
+		{
+			Config.MoveDecStep = int.Parse(txtDecStep.Text);
 		}
 	}
 }

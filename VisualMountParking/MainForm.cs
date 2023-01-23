@@ -4,10 +4,12 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Reflection;
 
-using ChekMountPosition.Properties;
+using VisualMountParking.Properties;
+using System.Runtime.Versioning;
+using ASCOM.DeviceInterface;
+using ASCOM.DriverAccess;
 
-
-namespace ChekMountPosition
+namespace VisualMountParking
 {
 
 	// per le WebAPI vedi https://drive.google.com/file/d/15AFMQSMlMdpjL2USPsvYd-J9xWecrEf9/view
@@ -15,34 +17,73 @@ namespace ChekMountPosition
 	{
 
 		SelectionMode SelectionState = SelectionMode.off;
-		System.Drawing.Point SelectionFirstPoint;
-		System.Drawing.Point SelectionLastPoint;
-		bool _ShowRefImage = true;
+		Point SelectionFirstPoint;
+		Point SelectionLastPoint;
+		Telescope _Telescope;
+		WebUtils _WebUtils = new WebUtils();
 
 		public MainForm()
 		{
 			InitializeComponent();
 			this.Icon = Resources._2bs_logo;
+			this.Width = pictureBox1.Width + 2 * pictureBox1.Left + (this.Width - ClientSize.Width);
 		}
 
 		PatternVerifier patternVerifier = new PatternVerifier();
 		private Config config { get { return patternVerifier.Config; } set { patternVerifier.Config = value; } }
 
-		private void MainForm_Load(object sender, EventArgs e)
+		public bool ShowRefImage
 		{
-
-			MainForm_Resize(sender, e);
-			config = Config.Load();
-			pictureBox1.Image = config.ReferenceImage;
+			get => chkShowRef.Checked;
+			set
+			{
+				chkShowRef.Checked = value;
+				MainForm_Resize(this, EventArgs.Empty);
+			}
 		}
 
+		private void MainForm_Load(object sender, EventArgs e)
+		{
+			ShowRefImage = false;
+			//MainForm_Resize(sender, e);
+			config = Config.Load();
+
+			SetMovementButtonsEnabled();
+			btCancel.BringToFront();
+
+			pictureBox1.Image = config.ReferenceImage;
+			if (!string.IsNullOrWhiteSpace(config.Source))
+			{
+				buttonLoadImage_Click(null, null);
+			}
+		}
+
+		private void ConnectTelescope()
+		{
+			DisconnectTelescope();
+			if (!string.IsNullOrWhiteSpace(config.TelescopeDriver))
+			{
+				_Telescope = new Telescope(config.TelescopeDriver);
+				_Telescope.Connected = true;
+			}
+		}
+
+		private void DisconnectTelescope()
+		{
+			if (_Telescope != null)
+			{
+				_Telescope.Connected = false;
+				_Telescope.Dispose();
+				_Telescope = null;
+			}
+		}
 
 		private async void buttonLoadImage_Click(object sender, EventArgs e)
 		{
 			patternVerifier.ZoneMatchList.Clear();
 			pictureBox2.Image = null;
-			var loader = new WebUtils();
-			var image = await loader.LoadImageAsync(config.SourceType, config.Source);
+
+			var image = await _WebUtils.LoadImageAsync(config.SourceType, config.Source);
 			patternVerifier.NewImage = new Bitmap(image);
 			pictureBox2.Image = patternVerifier.NewImage;
 			Application.DoEvents();
@@ -172,29 +213,41 @@ namespace ChekMountPosition
 			pictureBox2.Invalidate();
 		}
 
+		static Pen greenPen = new Pen(Color.Green, 1);
+		static Pen bluePen = new Pen(Color.Blue, 1);
+		static Pen redPen = new Pen(Color.DarkRed, 1);
+		static Font drawFont = new Font("Arial", 10);
+		static SolidBrush drawBrush = new SolidBrush(Color.DarkRed);
+
+
 		private void pictureBox2_Paint(object sender, PaintEventArgs e)
 		{
 			GetStretch((PictureBox)sender, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
 			var g = e.Graphics;
 			foreach (var zoneMatch in patternVerifier.ZoneMatchList)
 			{
-				Color color;
 				var sp = zoneMatch.Source;
 				var tp = zoneMatch.Target;
+
+				var x = (int)(sp.X * stretchX) + shiftX;
+				var y = (int)(sp.Y * stretchY) + shiftY;
+
 				if (sp.X == tp.X && sp.Y == tp.Y && sp.Width == tp.Width && sp.Height == tp.Height)
 				{
-					color = Color.Green;
-					g.DrawRectangle(new Pen(color, 1), (int)(tp.X * stretchX) + shiftX, (int)(tp.Y * stretchY) + shiftY, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
+					g.DrawRectangle(greenPen, x, y, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
 				}
 				else
 				{
-					color = Color.Blue;
-					g.DrawRectangle(new Pen(color, 1), (int)(sp.X * stretchX) + shiftX, (int)(sp.Y * stretchY) + shiftY, (int)(sp.Width * stretchX), (int)(sp.Height * stretchY));
-					color = Color.Red;
-					g.DrawRectangle(new Pen(color, 1), (int)(tp.X * stretchX) + shiftX, (int)(tp.Y * stretchY) + shiftY, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
+
+					g.DrawRectangle(bluePen, x, y, (int)(sp.Width * stretchX), (int)(sp.Height * stretchY));
+					var x1 = (int)(tp.X * stretchX) + shiftX;
+					var y1 = (int)(tp.Y * stretchY) + shiftY;
+					g.DrawRectangle(redPen, x1, y1, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
+					//---
+					var msg = $"{tp.X - sp.X},{tp.Y - sp.Y}";
+
+					g.DrawString(msg, drawFont, drawBrush, x1 + 2, y1 + 2);
 				}
-
-
 			}
 		}
 
@@ -205,7 +258,7 @@ namespace ChekMountPosition
 			var height = ClientSize.Height - top - dX;
 
 			int width;
-			if (_ShowRefImage)
+			if (ShowRefImage)
 				width = (ClientSize.Width - dX * 3) / 2;
 			else
 				width = ClientSize.Width - dX * 2;
@@ -213,7 +266,7 @@ namespace ChekMountPosition
 			pictureBox1.Top = pictureBox2.Top = top;
 			pictureBox1.Width = pictureBox2.Width = width;
 			pictureBox1.Height = pictureBox2.Height = height;
-			if (_ShowRefImage)
+			if (ShowRefImage)
 			{
 				pictureBox1.Visible = true;
 				pictureBox2.Left = width + dX * 2;
@@ -253,16 +306,20 @@ namespace ChekMountPosition
 					config = f.Config;
 				}
 			}
+			ConnectTelescope();
 		}
 
+		bool ShowingOriginal = false;
 		private void pictureBox2_MouseDown(object sender, MouseEventArgs e)
 		{
+			ShowingOriginal = true;
 			pictureBox2.Image = patternVerifier.Config.ReferenceImage;
 		}
 
 		private void pictureBox2_MouseUp(object sender, MouseEventArgs e)
 		{
 			pictureBox2.Image = patternVerifier.NewImage;
+			ShowingOriginal = false;
 		}
 
 		private async void btLightON_ClickAsync(object sender, EventArgs e)
@@ -272,8 +329,8 @@ namespace ChekMountPosition
 			btLightON.Enabled = false;
 			try
 			{
-				var ut = new WebUtils();
-				var result = await ut.RunCommandURIAsync(config.LightOnCommand);
+
+				var result = await _WebUtils.RunCommandURIAsync(config.LightOnCommand);
 			}
 			catch (Exception ex)
 			{
@@ -289,8 +346,8 @@ namespace ChekMountPosition
 			btLightON.Enabled = false;
 			try
 			{
-				var ut = new WebUtils();
-				var result = await ut.RunCommandURIAsync(config.LightOffCommand);
+
+				var result = await _WebUtils.RunCommandURIAsync(config.LightOffCommand);
 			}
 			catch (Exception ex)
 			{
@@ -306,7 +363,6 @@ namespace ChekMountPosition
 
 		private void chkShowRef_CheckedChanged(object sender, EventArgs e)
 		{
-			_ShowRefImage = chkShowRef.Checked;
 			var deltaSize = pictureBox1.Width + pictureBox1.Left;
 			if (chkShowRef.Checked)
 			{
@@ -317,6 +373,139 @@ namespace ChekMountPosition
 				this.Width -= deltaSize;
 			}
 
+		}
+
+		private void btRaLow2_Click(object sender, EventArgs e)
+		{
+			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaStep * -10);
+		}
+
+		private void btRaLow_Click(object sender, EventArgs e)
+		{
+			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaStep * -1);
+		}
+
+		private void btRaHigh_Click(object sender, EventArgs e)
+		{
+			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaStep * +1);
+		}
+
+		private void btRaHigh2_Click(object sender, EventArgs e)
+		{
+			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaStep * +10);
+		}
+
+		private void btDecLow2_Click(object sender, EventArgs e)
+		{
+			RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecStep * -10);
+		}
+
+		private void btDecLow_Click(object sender, EventArgs e)
+		{
+			RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecStep * -1);
+		}
+
+		private void btDecHigh_Click(object sender, EventArgs e)
+		{
+			RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecStep * +1);
+		}
+
+		private void btDecHigh2_Click(object sender, EventArgs e)
+		{
+			RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecStep * +10);
+		}
+
+		private void RotateAxis(TelescopeAxes axis, double arcsec)
+		{
+
+			var degree = arcsec / (60 * 60);
+			if (_Telescope is null || _Telescope.Connected == false)
+				return;
+
+			if (_Telescope.AtPark)
+			{
+				MessageBox.Show("Mount is At Park", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+
+			var dec = _Telescope.Declination;
+			var ra = _Telescope.RightAscension;
+			if (axis == TelescopeAxes.axisPrimary)
+			{
+				ra = (ra + degree + 24) % 24;
+			}
+			else
+			{
+				dec = dec + degree;
+				if (dec < -90) dec = -90;
+				if (dec > 90) dec = 90;
+			}
+			_Telescope.Tracking = true;
+			_Telescope.SlewToCoordinatesAsync(ra, dec);
+			timerSlewing.Start();
+
+		}
+
+		private void btConnect_Click(object sender, EventArgs e)
+		{
+			if (_Telescope != null && _Telescope.Connected)
+				DisconnectTelescope();
+			else
+				ConnectTelescope();
+			SetMovementButtonsEnabled();
+		}
+
+		private void SetMovementButtonsEnabled()
+		{
+			if (_Telescope != null && _Telescope.Connected)
+			{
+				btConnect.Text = "Disconnect";
+				btRaHigh2.Enabled = btRaHigh.Enabled = btRaLow.Enabled = btRaLow2.Enabled = true;
+				btDecHigh2.Enabled = btDecHigh.Enabled = btDecLow.Enabled = btDecLow2.Enabled = true;
+			}
+			else
+			{
+				btConnect.Text = "Connect";
+				btRaHigh2.Enabled = btRaHigh.Enabled = btRaLow.Enabled = btRaLow2.Enabled = false;
+				btDecHigh2.Enabled = btDecHigh.Enabled = btDecLow.Enabled = btDecLow2.Enabled = false;
+			}
+		}
+
+		private void timer1_Tick(object sender, EventArgs e)
+		{
+			if (_Telescope.Slewing)
+			{
+				btCancel.Visible = true;
+			}
+			else
+			{
+				btCancel.Visible = false;
+				_Telescope.Tracking = false;
+				timerSlewing.Stop();
+				buttonLoadImage_Click(null, null);
+			}
+		}
+
+		private void btCancel_Click(object sender, EventArgs e)
+		{
+			_Telescope.AbortSlew();
+		}
+
+		bool loading = false;
+		private async void timerImage_Tick(object sender, EventArgs e)
+		{
+			if (loading || ShowingOriginal)
+				return;
+			loading = true;
+			var image = await _WebUtils.LoadImageAsync(config.SourceType, config.Source);
+			if (!ShowingOriginal)
+				pictureBox2.Image = image;
+			loading = false;
+		}
+
+		private void chkUpdateImage_CheckedChanged(object sender, EventArgs e)
+		{
+			timerImage.Enabled = chkUpdateImage.Checked;
 		}
 	}
 	public enum SelectionMode { off, WaitingEnd }

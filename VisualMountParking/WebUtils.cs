@@ -1,4 +1,4 @@
-﻿using ChekMountPosition.Properties;
+﻿using VisualMountParking.Properties;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -10,7 +10,7 @@ using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChekMountPosition
+namespace VisualMountParking
 {
 	internal class WebUtils
 	{

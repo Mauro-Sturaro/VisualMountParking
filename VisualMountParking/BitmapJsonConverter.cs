@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using System.IO;
 using System.Drawing.Imaging;
 
-namespace ChekMountPosition
+namespace VisualMountParking
 {
 	public class BitmapJsonConverter : JsonConverter<Bitmap>
 	{

@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ChekMountPosition
+namespace VisualMountParking
 {
 	public partial class EditCommand : Form
 	{

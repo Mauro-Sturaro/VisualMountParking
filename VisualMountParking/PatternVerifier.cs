@@ -5,7 +5,7 @@ using Accord.Imaging;
 using System.Diagnostics;
 using System;
 
-namespace ChekMountPosition
+namespace VisualMountParking
 {
 	public class PatternVerifier
 	{
@@ -36,8 +36,8 @@ namespace ChekMountPosition
 
 		private Zone EstraiDintorni(int width, int height, Zone template)
 		{
-			var newWidth = Math.Min( template.Width*5, width );
-			var newHeight = Math.Min(template.Height*5, height );
+			var newWidth = Math.Min( template.Width*3, width );
+			var newHeight = Math.Min(template.Height*3, height );
 			var cX = template.X + template.Width / 2;
 			var cY = template.Y + template.Height / 2;
 			var newX = cX-newWidth/2;

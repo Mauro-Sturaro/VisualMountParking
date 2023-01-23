@@ -1,4 +1,4 @@
-﻿namespace ChekMountPosition
+﻿namespace VisualMountParking
 {
 	partial class EditCommand
 	{
