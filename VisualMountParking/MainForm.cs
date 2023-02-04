@@ -501,16 +501,23 @@ namespace VisualMountParking
 
 		private async void btPark_Click(object sender, EventArgs e)
 		{
-			if (_Telescope == null || !_Telescope.Connected)
-				return;
-			if (_Telescope.AtPark)
+			try
 			{
-				_Telescope.Unpark();
-				_Telescope.AbortSlew();
+				if (_Telescope == null || !_Telescope.Connected)
+					return;
+				if (_Telescope.AtPark)
+				{
+					_Telescope.Unpark();
+					_Telescope.Tracking = false;
+				}
+				else
+					await Task.Run(() => _Telescope.Park());
+				UpdateMovementButtons();
+			} catch(Exception ex)
+			{
+				MessageBox.Show(ex.Message,ex.GetType().Name,MessageBoxButtons.OK,MessageBoxIcon.Error);
+
 			}
-			else
-				await Task.Run(() => _Telescope.Park());
-			UpdateMovementButtons();
 		}
 
 		private void timerMountStat_Tick(object sender, EventArgs e)
