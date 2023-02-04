@@ -31,16 +31,32 @@ namespace VisualMountParking
 		}
 
 		private void btSave_Click(object sender, EventArgs e)
-		{			
-		 	DialogResult= DialogResult.OK;			
+		{
+			StoreMoveSettings();
+
+			DialogResult = DialogResult.OK;
 			Config.Save();
 			this.Close();
 		}
 
+		private void StoreMoveSettings()
+		{
+			Config.MoveRaRate = numRaRrate.Value;
+			Config.MoveDecRate = numDecRate.Value;
+			Config.MoveRaTime = numRaTime.Value;
+			Config.MoveDecTime = numDecTime.Value;
+			Config.FastRateMultiplier = numFastSpeed.Value;
+			Config.FastTimeMultiplier = numFastTime.Value;
+		}
+
 		private void SettingsForm_Load(object sender, EventArgs e)
 		{
-			txtRaStep.Text = Config.MoveRaStep.ToString();
-			txtDecStep.Text = Config.MoveDecStep.ToString();
+			numRaRrate.Value = Config.MoveRaRate;
+			numDecRate.Value = Config.MoveDecRate;
+			numRaTime.Value = Config.MoveRaTime;
+			numDecTime.Value = Config.MoveDecTime;
+			numFastSpeed.Value = Config.FastRateMultiplier;
+			numFastTime.Value = Config.FastTimeMultiplier;
 
 			cmbSourceType.SelectedIndex = (int)Config.SourceType;
 			txtRegionsCount.Text = Config.Templates.Count.ToString();
@@ -56,7 +72,7 @@ namespace VisualMountParking
 		private void cmbSourceType_SelectedIndexChanged(object sender, EventArgs e)
 		{
 
-			Config.SourceType = (ImageSourceType)cmbSourceType.SelectedIndex ;
+			Config.SourceType = (ImageSourceType)cmbSourceType.SelectedIndex;
 		}
 
 		private void btRegionsClear_Click(object sender, EventArgs e)
@@ -67,11 +83,11 @@ namespace VisualMountParking
 
 		private void btLightOn_Click(object sender, EventArgs e)
 		{
-			using(var form = new EditCommand())
+			using (var form = new EditCommand())
 			{
 
 				form.Command = Config.LightOnCommand;
-				if( form.ShowDialog() == DialogResult.OK)
+				if (form.ShowDialog() == DialogResult.OK)
 				{
 					Config.LightOnCommand = form.Command;
 				}
@@ -93,11 +109,11 @@ namespace VisualMountParking
 
 		private void btExportPreview_Click(object sender, EventArgs e)
 		{
-			using(var dlg = new SaveFileDialog())
+			using (var dlg = new SaveFileDialog())
 			{
-				dlg.Filter =  "png file (*.png)|*.png";
+				dlg.Filter = "png file (*.png)|*.png";
 				dlg.FileName = "PreviewImage.png";
-				if(dlg.ShowDialog() == DialogResult.OK)
+				if (dlg.ShowDialog() == DialogResult.OK)
 				{
 					picPreview.Image.Save(dlg.FileName);
 				}
@@ -113,14 +129,9 @@ namespace VisualMountParking
 			Config.TelescopeDriver = progId;
 		}
 
-		private void txtRaStep_TextChanged(object sender, EventArgs e)
+		private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			Config.MoveRaStep = int.Parse(txtRaStep.Text);
-		}
-
-		private void txtDecStep_TextChanged(object sender, EventArgs e)
-		{
-			Config.MoveDecStep = int.Parse(txtDecStep.Text);
+			StoreMoveSettings();
 		}
 	}
 }

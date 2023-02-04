@@ -8,6 +8,7 @@ using VisualMountParking.Properties;
 using System.Runtime.Versioning;
 using ASCOM.DeviceInterface;
 using ASCOM.DriverAccess;
+using System.Threading.Tasks;
 
 namespace VisualMountParking
 {
@@ -15,12 +16,11 @@ namespace VisualMountParking
 	// per le WebAPI vedi https://drive.google.com/file/d/15AFMQSMlMdpjL2USPsvYd-J9xWecrEf9/view
 	public partial class MainForm : Form
 	{
-
-		SelectionMode SelectionState = SelectionMode.off;
-		Point SelectionFirstPoint;
-		Point SelectionLastPoint;
+		bool _MouseDragging = false;
+		Point _SelectionFirstPoint;
+		Point _SelectionLastPoint;
 		Telescope _Telescope;
-		WebUtils _WebUtils = new WebUtils();
+		WebUtils _WebUtils = new WebUtils();	
 
 		public MainForm()
 		{
@@ -48,7 +48,7 @@ namespace VisualMountParking
 			//MainForm_Resize(sender, e);
 			config = Config.Load();
 
-			SetMovementButtonsEnabled();
+			UpdateMovementButtons();
 			btCancel.BringToFront();
 
 			pictureBox1.Image = config.ReferenceImage;
@@ -98,30 +98,30 @@ namespace VisualMountParking
 		}
 		private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
 		{
-			if (SelectionState == SelectionMode.off)
+			if (_MouseDragging == false)
 			{
-				SelectionFirstPoint = e.Location;
-				SelectionState = SelectionMode.WaitingEnd;
+				_SelectionFirstPoint = e.Location;
+				_MouseDragging = true;
 				pictureBox1.Cursor = Cursors.Cross;
 			}
 		}
 
 		private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
 		{
-			SelectionLastPoint = e.Location;
+			_SelectionLastPoint = e.Location;
 			pictureBox1.Invalidate();
 		}
 
 		private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
 		{
-			if (SelectionState == SelectionMode.WaitingEnd)
+			if (_MouseDragging)
 			{
 
 				//
 				GetStretch(pictureBox1, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
 
 				// Raddrizza le coordinate se necessario
-				SortPoint(SelectionFirstPoint, e.Location, out var startPoint, out var endPoint);
+				SortPoint(_SelectionFirstPoint, e.Location, out var startPoint, out var endPoint);
 
 
 				// Calcola il rettangolo rispetto all'immagine reale
@@ -139,7 +139,7 @@ namespace VisualMountParking
 
 				//				
 				Cursor.Current = Cursors.Default;
-				SelectionState = SelectionMode.off;
+				_MouseDragging = false;
 			}
 		}
 
@@ -158,9 +158,9 @@ namespace VisualMountParking
 				g.DrawRectangle(new Pen(Color.Blue, 1), (int)(tp.X * stretchX) + shiftX, (int)(tp.Y * stretchY) + shiftY, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
 
 			}
-			if (SelectionState == SelectionMode.WaitingEnd)
+			if (_MouseDragging)
 			{
-				SortPoint(SelectionFirstPoint, SelectionLastPoint, out var startPoint, out var endPoint);
+				SortPoint(_SelectionFirstPoint, _SelectionLastPoint, out var startPoint, out var endPoint);
 				g.DrawRectangle(new Pen(Color.Coral, 1), startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y);
 			}
 		}
@@ -204,21 +204,11 @@ namespace VisualMountParking
 
 		}
 
-		private void btCheckImage_Click(object sender, EventArgs e)
-		{
-			patternVerifier.ZoneMatchList.Clear();
-			pictureBox2.Invalidate();
-			Application.DoEvents();
-			patternVerifier.SearchMatch();
-			pictureBox2.Invalidate();
-		}
-
 		static Pen greenPen = new Pen(Color.Green, 1);
 		static Pen bluePen = new Pen(Color.Blue, 1);
 		static Pen redPen = new Pen(Color.DarkRed, 1);
 		static Font drawFont = new Font("Arial", 10);
 		static SolidBrush drawBrush = new SolidBrush(Color.DarkRed);
-
 
 		private void pictureBox2_Paint(object sender, PaintEventArgs e)
 		{
@@ -306,7 +296,6 @@ namespace VisualMountParking
 					config = f.Config;
 				}
 			}
-			ConnectTelescope();
 		}
 
 		bool ShowingOriginal = false;
@@ -356,11 +345,6 @@ namespace VisualMountParking
 			btLightON.Enabled = true;
 		}
 
-		private void button1_Click(object sender, EventArgs e)
-		{
-			patternVerifier.SearchMatch();
-		}
-
 		private void chkShowRef_CheckedChanged(object sender, EventArgs e)
 		{
 			var deltaSize = pictureBox1.Width + pictureBox1.Left;
@@ -375,50 +359,52 @@ namespace VisualMountParking
 
 		}
 
+
+
 		private void btRaLow2_Click(object sender, EventArgs e)
 		{
-			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaStep * -10);
+			RotateAxis(TelescopeAxes.axisPrimary, -config.MoveRaRate * config.FastRateMultiplier, config.MoveRaTime * config.FastTimeMultiplier);
 		}
 
 		private void btRaLow_Click(object sender, EventArgs e)
 		{
-			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaStep * -1);
+			RotateAxis(TelescopeAxes.axisPrimary, -config.MoveRaRate, config.MoveRaTime);
 		}
 
 		private void btRaHigh_Click(object sender, EventArgs e)
 		{
-			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaStep * +1);
+			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaRate, config.MoveRaTime);
 		}
 
 		private void btRaHigh2_Click(object sender, EventArgs e)
 		{
-			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaStep * +10);
+			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaRate * config.FastRateMultiplier, config.MoveRaTime * config.FastTimeMultiplier);
 		}
 
 		private void btDecLow2_Click(object sender, EventArgs e)
 		{
-			RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecStep * -10);
+			RotateAxis(TelescopeAxes.axisSecondary, -config.MoveDecRate * config.FastRateMultiplier, config.MoveDecTime * config.FastTimeMultiplier);
 		}
 
 		private void btDecLow_Click(object sender, EventArgs e)
 		{
-			RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecStep * -1);
+			RotateAxis(TelescopeAxes.axisSecondary, -config.MoveDecRate, config.MoveRaTime);
 		}
 
 		private void btDecHigh_Click(object sender, EventArgs e)
 		{
-			RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecStep * +1);
+			RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecRate, config.MoveRaTime);
 		}
 
 		private void btDecHigh2_Click(object sender, EventArgs e)
 		{
-			RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecStep * +10);
+			RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecRate * config.FastRateMultiplier, config.MoveDecTime * config.FastTimeMultiplier);
 		}
 
-		private void RotateAxis(TelescopeAxes axis, double arcsec)
+		private async void RotateAxis(TelescopeAxes axis, decimal rate, decimal time)
 		{
 
-			var degree = arcsec / (60 * 60);
+
 			if (_Telescope is null || _Telescope.Connected == false)
 				return;
 
@@ -428,21 +414,13 @@ namespace VisualMountParking
 				return;
 			}
 
-			var dec = _Telescope.Declination;
-			var ra = _Telescope.RightAscension;
-			if (axis == TelescopeAxes.axisPrimary)
-			{
-				ra = (ra + degree + 24) % 24;
-			}
-			else
-			{
-				dec = dec + degree;
-				if (dec < -90) dec = -90;
-				if (dec > 90) dec = 90;
-			}
-			_Telescope.Tracking = true;
-			_Telescope.SlewToCoordinatesAsync(ra, dec);
-			timerSlewing.Start();
+			_Telescope.MoveAxis(axis, (double)rate);
+
+			var delay = (int)(time * 100);
+
+			await Task.Delay(delay);
+			_Telescope.AbortSlew();
+			buttonLoadImage_Click(null, null);
 
 		}
 
@@ -452,38 +430,46 @@ namespace VisualMountParking
 				DisconnectTelescope();
 			else
 				ConnectTelescope();
-			SetMovementButtonsEnabled();
+			UpdateMovementButtons();
 		}
 
-		private void SetMovementButtonsEnabled()
+		private void UpdateMovementButtons()
 		{
+			bool canMove = false;
+
 			if (_Telescope != null && _Telescope.Connected)
 			{
 				btConnect.Text = "Disconnect";
-				btRaHigh2.Enabled = btRaHigh.Enabled = btRaLow.Enabled = btRaLow2.Enabled = true;
-				btDecHigh2.Enabled = btDecHigh.Enabled = btDecLow.Enabled = btDecLow2.Enabled = true;
+				btPark.Enabled = true;
+				if (_Telescope.AtPark)
+				{
+					btPark.Text = "Unpark";
+					canMove = false;
+				}
+				else
+				{
+					btPark.Text = "Park";
+					canMove = true;
+				}
+				if (_Telescope.Slewing)
+				{
+					btCancel.Visible = true;
+				}
+				else
+				{
+					btCancel.Visible = false;				
+				}
 			}
 			else
 			{
 				btConnect.Text = "Connect";
-				btRaHigh2.Enabled = btRaHigh.Enabled = btRaLow.Enabled = btRaLow2.Enabled = false;
-				btDecHigh2.Enabled = btDecHigh.Enabled = btDecLow.Enabled = btDecLow2.Enabled = false;
-			}
-		}
-
-		private void timer1_Tick(object sender, EventArgs e)
-		{
-			if (_Telescope.Slewing)
-			{
-				btCancel.Visible = true;
-			}
-			else
-			{
 				btCancel.Visible = false;
-				_Telescope.Tracking = false;
-				timerSlewing.Stop();
-				buttonLoadImage_Click(null, null);
+				btPark.Enabled = false;
+				canMove = false;
 			}
+
+			btRaHigh2.Enabled = btRaHigh.Enabled = btRaLow.Enabled = btRaLow2.Enabled = canMove;
+			btDecHigh2.Enabled = btDecHigh.Enabled = btDecLow.Enabled = btDecLow2.Enabled = canMove;
 		}
 
 		private void btCancel_Click(object sender, EventArgs e)
@@ -506,6 +492,30 @@ namespace VisualMountParking
 		private void chkUpdateImage_CheckedChanged(object sender, EventArgs e)
 		{
 			timerImage.Enabled = chkUpdateImage.Checked;
+		}
+
+		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			DisconnectTelescope();
+		}
+
+		private async void btPark_Click(object sender, EventArgs e)
+		{
+			if (_Telescope == null || !_Telescope.Connected)
+				return;
+			if (_Telescope.AtPark)
+			{
+				_Telescope.Unpark();
+				_Telescope.AbortSlew();
+			}
+			else
+				await Task.Run(() => _Telescope.Park());
+			UpdateMovementButtons();
+		}
+
+		private void timerMountStat_Tick(object sender, EventArgs e)
+		{
+			UpdateMovementButtons();
 		}
 	}
 	public enum SelectionMode { off, WaitingEnd }

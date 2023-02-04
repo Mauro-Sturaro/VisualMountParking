@@ -50,10 +50,11 @@
 			this.btDecHigh2 = new System.Windows.Forms.Button();
 			this.btRaHigh2 = new System.Windows.Forms.Button();
 			this.btConnect = new System.Windows.Forms.Button();
-			this.timerSlewing = new System.Windows.Forms.Timer(this.components);
 			this.btCancel = new System.Windows.Forms.Button();
 			this.chkUpdateImage = new System.Windows.Forms.CheckBox();
 			this.timerImage = new System.Windows.Forms.Timer(this.components);
+			this.btPark = new System.Windows.Forms.Button();
+			this.timerMountStat = new System.Windows.Forms.Timer(this.components);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
 			this.SuspendLayout();
@@ -131,9 +132,9 @@
 			// 
 			// btLightON
 			// 
-			this.btLightON.Location = new System.Drawing.Point(263, 4);
+			this.btLightON.Location = new System.Drawing.Point(268, 4);
 			this.btLightON.Name = "btLightON";
-			this.btLightON.Size = new System.Drawing.Size(75, 23);
+			this.btLightON.Size = new System.Drawing.Size(62, 23);
 			this.btLightON.TabIndex = 27;
 			this.btLightON.Text = "Light ON";
 			this.btLightON.UseVisualStyleBackColor = true;
@@ -141,9 +142,9 @@
 			// 
 			// btLightOFF
 			// 
-			this.btLightOFF.Location = new System.Drawing.Point(263, 30);
+			this.btLightOFF.Location = new System.Drawing.Point(268, 30);
 			this.btLightOFF.Name = "btLightOFF";
-			this.btLightOFF.Size = new System.Drawing.Size(75, 23);
+			this.btLightOFF.Size = new System.Drawing.Size(62, 23);
 			this.btLightOFF.TabIndex = 28;
 			this.btLightOFF.Text = "Light OFF";
 			this.btLightOFF.UseVisualStyleBackColor = true;
@@ -260,17 +261,13 @@
 			// 
 			// btConnect
 			// 
-			this.btConnect.Location = new System.Drawing.Point(347, 17);
+			this.btConnect.Location = new System.Drawing.Point(346, 4);
 			this.btConnect.Name = "btConnect";
 			this.btConnect.Size = new System.Drawing.Size(71, 23);
 			this.btConnect.TabIndex = 40;
 			this.btConnect.Text = "Connect";
 			this.btConnect.UseVisualStyleBackColor = true;
 			this.btConnect.Click += new System.EventHandler(this.btConnect_Click);
-			// 
-			// timerSlewing
-			// 
-			this.timerSlewing.Tick += new System.EventHandler(this.timer1_Tick);
 			// 
 			// btCancel
 			// 
@@ -300,11 +297,28 @@
 			this.timerImage.Interval = 250;
 			this.timerImage.Tick += new System.EventHandler(this.timerImage_Tick);
 			// 
+			// btPark
+			// 
+			this.btPark.Location = new System.Drawing.Point(346, 31);
+			this.btPark.Name = "btPark";
+			this.btPark.Size = new System.Drawing.Size(71, 23);
+			this.btPark.TabIndex = 43;
+			this.btPark.Text = "Park";
+			this.btPark.UseVisualStyleBackColor = true;
+			this.btPark.Click += new System.EventHandler(this.btPark_Click);
+			// 
+			// timerMountStat
+			// 
+			this.timerMountStat.Enabled = true;
+			this.timerMountStat.Interval = 500;
+			this.timerMountStat.Tick += new System.EventHandler(this.timerMountStat_Tick);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(612, 487);
+			this.Controls.Add(this.btPark);
 			this.Controls.Add(this.chkUpdateImage);
 			this.Controls.Add(this.btConnect);
 			this.Controls.Add(this.btDecHigh2);
@@ -329,6 +343,7 @@
 			this.Controls.Add(this.btCancel);
 			this.Name = "MainForm";
 			this.Text = "ChekMountPosition";
+			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
 			this.Load += new System.EventHandler(this.MainForm_Load);
 			this.Resize += new System.EventHandler(this.MainForm_Resize);
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
@@ -360,9 +375,10 @@
 		private System.Windows.Forms.Button btDecHigh2;
 		private System.Windows.Forms.Button btRaHigh2;
 		private System.Windows.Forms.Button btConnect;
-		private System.Windows.Forms.Timer timerSlewing;
 		private System.Windows.Forms.Button btCancel;
 		private System.Windows.Forms.CheckBox chkUpdateImage;
 		private System.Windows.Forms.Timer timerImage;
+		private System.Windows.Forms.Button btPark;
+		private System.Windows.Forms.Timer timerMountStat;
 	}
 }

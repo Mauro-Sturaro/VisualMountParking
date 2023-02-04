@@ -16,21 +16,21 @@ namespace VisualMountParking
 		//[JsonConverter(typeof(BitmapJsonConverter))]
 		[JsonIgnore]
 		public Bitmap ReferenceImage { get; set; }
-
 		public string Source { get; set; }
-
-
 		public ImageSourceType SourceType { get; set; }
 
 		public CommandUri LightOnCommand { get; set; }
 		public CommandUri LightOffCommand { get; set; }
-
-		public int MoveRaStep { get; set; }
-		public int MoveDecStep { get; set; }
-		public bool RevertRa { get; set; }
-		public bool RevertDec { get; set; }
-
 		public string TelescopeDriver { get; set; }
+
+		// Move settings
+		public decimal MoveRaRate { get; set; }
+		public decimal MoveDecRate { get; set; }
+
+		public decimal MoveRaTime { get; set; }
+		public decimal MoveDecTime { get; set; }
+		public decimal FastTimeMultiplier { get;  set; }
+		public decimal FastRateMultiplier { get;  set; }
 
 		private static string GetConfigPath()
 		{
@@ -76,7 +76,7 @@ namespace VisualMountParking
 				{
 					using (var img = Image.FromFile(imageFileName))
 					{
-						cfg.ReferenceImage =  new Bitmap(img);
+						cfg.ReferenceImage = new Bitmap(img);
 					}
 				}
 			}
@@ -85,10 +85,18 @@ namespace VisualMountParking
 				cfg = new Config();
 			}
 			// adjust some value
-			if (cfg.MoveRaStep <= 0)
-				cfg.MoveRaStep = 600;
-			if (cfg.MoveDecStep <= 0)
-				cfg.MoveDecStep = 600;
+			if (cfg.MoveRaRate == 0)
+				cfg.MoveRaRate = 1;
+			if (cfg.MoveDecRate == 0)
+				cfg.MoveDecRate = 1;
+			if (cfg.MoveRaTime <= 0)
+				cfg.MoveRaTime = 1;
+			if (cfg.MoveDecTime <= 0)
+				cfg.MoveDecTime = 1;
+			if (cfg.FastRateMultiplier < 1)
+				cfg.FastRateMultiplier = 2;
+			if (cfg.FastTimeMultiplier < 1)
+				cfg.FastTimeMultiplier = 3;
 
 
 			return cfg;
