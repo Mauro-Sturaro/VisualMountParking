@@ -20,6 +20,10 @@ namespace VisualMountParking
 		{
 			txt.Text = txt.Text + message + "\r\n";
 		}
+		public void Write(string message)
+		{
+			txt.Text = txt.Text + message;
+		}
 	}
 
 

@@ -78,9 +78,9 @@
 			// pictureBox2
 			// 
 			this.pictureBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.pictureBox2.Location = new System.Drawing.Point(611, 368);
+			this.pictureBox2.Location = new System.Drawing.Point(516, 389);
 			this.pictureBox2.Name = "pictureBox2";
-			this.pictureBox2.Size = new System.Drawing.Size(69, 101);
+			this.pictureBox2.Size = new System.Drawing.Size(98, 120);
 			this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
 			this.pictureBox2.TabIndex = 7;
 			this.pictureBox2.TabStop = false;
@@ -126,7 +126,7 @@
 			this.btSettings.Image = ((System.Drawing.Image)(resources.GetObject("btSettings.Image")));
 			this.btSettings.Location = new System.Drawing.Point(10, 5);
 			this.btSettings.Name = "btSettings";
-			this.btSettings.Size = new System.Drawing.Size(39, 48);
+			this.btSettings.Size = new System.Drawing.Size(27, 34);
 			this.btSettings.TabIndex = 26;
 			this.btSettings.UseVisualStyleBackColor = true;
 			this.btSettings.Click += new System.EventHandler(this.btSettings_Click);
@@ -275,7 +275,7 @@
 			this.btCancel.BackColor = System.Drawing.Color.Tomato;
 			this.btCancel.Location = new System.Drawing.Point(443, 4);
 			this.btCancel.Name = "btCancel";
-			this.btCancel.Size = new System.Drawing.Size(127, 49);
+			this.btCancel.Size = new System.Drawing.Size(171, 49);
 			this.btCancel.TabIndex = 41;
 			this.btCancel.Text = "CANCEL";
 			this.btCancel.UseVisualStyleBackColor = false;
@@ -318,9 +318,9 @@
 			// 
 			this.btAutoPark.Location = new System.Drawing.Point(576, 4);
 			this.btAutoPark.Name = "btAutoPark";
-			this.btAutoPark.Size = new System.Drawing.Size(29, 49);
+			this.btAutoPark.Size = new System.Drawing.Size(38, 49);
 			this.btAutoPark.TabIndex = 44;
-			this.btAutoPark.Text = "<>";
+			this.btAutoPark.Text = "Auto Park";
 			this.btAutoPark.UseVisualStyleBackColor = true;
 			this.btAutoPark.Click += new System.EventHandler(this.btAutoPark_Click);
 			// 
@@ -328,7 +328,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(747, 487);
+			this.ClientSize = new System.Drawing.Size(622, 521);
 			this.Controls.Add(this.btAutoPark);
 			this.Controls.Add(this.btPark);
 			this.Controls.Add(this.chkUpdateImage);

@@ -16,7 +16,7 @@ namespace VisualMountParking
 
 		internal void SearchMatch()
 		{
-			ZoneMatchList.Clear();
+			var newZone = new List<ZoneMatch>();
 			foreach (var zone in Config.Templates)
 			{
 				var zm = new ZoneMatch { Source = zone };
@@ -30,25 +30,27 @@ namespace VisualMountParking
 					target.Y += reducedZone.Y;
 					zm.Target = target;
 					zm.ZoneId = zone.Id;
-					ZoneMatchList.Add(zm);
+					newZone.Add(zm);
 				}
 			}
+			ZoneMatchList = newZone;
+
 		}
 
 		private Zone EstraiDintorni(int width, int height, Zone template)
 		{
-			var newWidth = Math.Min( template.Width*3, width );
-			var newHeight = Math.Min(template.Height*3, height );
+			var newWidth = Math.Min(template.Width * 3, width);
+			var newHeight = Math.Min(template.Height * 3, height);
 			var cX = template.X + template.Width / 2;
 			var cY = template.Y + template.Height / 2;
-			var newX = cX-newWidth/2;
-			var newY = cY-newHeight/2;
-			if(newX<0) newX=0;
-			if(newX+newWidth > width) newX=width-newWidth;
-			if(newY<0) newY=0;
-			if(newY+newHeight> height) newY=height-newHeight;
+			var newX = cX - newWidth / 2;
+			var newY = cY - newHeight / 2;
+			if (newX < 0) newX = 0;
+			if (newX + newWidth > width) newX = width - newWidth;
+			if (newY < 0) newY = 0;
+			if (newY + newHeight > height) newY = height - newHeight;
 
-			return new Zone {X= newX, Y = newY,Width=newWidth,Height=newHeight};
+			return new Zone { X = newX, Y = newY, Width = newWidth, Height = newHeight };
 		}
 
 		private Bitmap ExtractBitmap(Bitmap image, Zone zone)

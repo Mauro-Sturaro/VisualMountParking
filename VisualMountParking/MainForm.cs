@@ -1,40 +1,35 @@
-﻿using System;
-using System.Drawing;
-using System.Windows.Forms;
-using System.Diagnostics;
-using System.Reflection;
-
-using VisualMountParking.Properties;
-using System.Runtime.Versioning;
-using ASCOM.DeviceInterface;
+﻿using ASCOM.DeviceInterface;
 using ASCOM.DriverAccess;
-using System.Threading.Tasks;
-using System.Runtime.CompilerServices;
-using Accord.Math;
-using System.Security.Policy;
+using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using VisualMountParking.Properties;
 
 namespace VisualMountParking
 {
 
-	// per le WebAPI vedi https://drive.google.com/file/d/15AFMQSMlMdpjL2USPsvYd-J9xWecrEf9/view
+	// Camera WebAPI documentation https://drive.google.com/file/d/15AFMQSMlMdpjL2USPsvYd-J9xWecrEf9/view
 	public partial class MainForm : Form
 	{
 		bool _MouseDragging = false;
 		Point _SelectionFirstPoint;
 		Point _SelectionLastPoint;
-		Telescope _Telescope;
 		WebUtils _WebUtils = new WebUtils();
+		VisualParkDriver _vpDriver = new VisualParkDriver();
+		PatternVerifier patternVerifier => _vpDriver.PatternVerifier;
 
 		public MainForm()
 		{
 			InitializeComponent();
 			this.Icon = Resources._2bs_logo;
-			this.Width = pictureBox1.Width + 2 * pictureBox1.Left + (this.Width - ClientSize.Width);
+			//this.Width = pictureBox1.Width + 2 * pictureBox1.Left + (this.Width - ClientSize.Width);
 		}
 
-		PatternVerifier patternVerifier = new PatternVerifier();
-		private Config config { get { return patternVerifier.Config; } set { patternVerifier.Config = value; } }
+		private Config config { get { return _vpDriver.Config; } set { _vpDriver.Config = value; } }
 
 		public bool ShowRefImage
 		{
@@ -46,64 +41,38 @@ namespace VisualMountParking
 			}
 		}
 
-		private void MainForm_Load(object sender, EventArgs e)
+		private async void MainForm_Load(object sender, EventArgs e)
 		{
 			ShowRefImage = false;
-			//MainForm_Resize(sender, e);
+			MainForm_Resize(sender, e);
 			config = Config.Load();
+			_vpDriver.Config = config;
 
 			UpdateMovementButtons();
 			btCancel.BringToFront();
 
 			pictureBox1.Image = config.ReferenceImage;
-			if (!string.IsNullOrWhiteSpace(config.Source))
-			{
-				buttonLoadImage_Click(null, null);
-			}
+			_vpDriver.ImageUpdated += _vpDriver_ImageUpdated;
+			await _vpDriver.LoadNewImage();
 		}
 
-		private void ConnectTelescope()
+		private void _vpDriver_ImageUpdated(object sender, EventArgs e)
 		{
-			DisconnectTelescope();
-			if (!string.IsNullOrWhiteSpace(config.TelescopeDriver))
-			{
-				_Telescope = new Telescope(config.TelescopeDriver);
-				_Telescope.Connected = true;
-			}
-		}
-
-		private void DisconnectTelescope()
-		{
-			if (_Telescope != null)
-			{
-				_Telescope.Connected = false;
-				_Telescope.Dispose();
-				_Telescope = null;
-			}
+			if (!ShowingOriginal)
+				pictureBox2.Image = _vpDriver.CurrentImage;
 		}
 
 		private async void buttonLoadImage_Click(object sender, EventArgs e)
 		{
-			pictureBox2.Image = null;
-			Application.DoEvents();
-			await CheckPosition();
-			pictureBox2.Image = patternVerifier.NewImage;
+			pictureBox2.Image = await _vpDriver.LoadNewImage();
+			await _vpDriver.CheckPosition();
 			pictureBox2.Invalidate();
-		}
-
-		private async Task CheckPosition()
-		{
-			patternVerifier.ZoneMatchList.Clear();
-			var image = await _WebUtils.LoadImageAsync(config.SourceType, config.Source);
-			patternVerifier.NewImage = new Bitmap(image);
-			pictureBox2.Image = patternVerifier.NewImage;
-			patternVerifier.SearchMatch();
 		}
 
 		private void btSetRefImage_Click(object sender, EventArgs e)
 		{
-			pictureBox1.Image = patternVerifier.NewImage;
-			config.ReferenceImage = patternVerifier.NewImage;
+			_vpDriver.Config.ReferenceImage = _vpDriver.CurrentImage;
+			pictureBox1.Image = _vpDriver.CurrentImage;
 		}
 		private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
 		{
@@ -387,100 +356,78 @@ namespace VisualMountParking
 
 		CancellationTokenSource _CancellationTokenSource = new CancellationTokenSource();
 
-		private void btRaLow2_Click(object sender, EventArgs e)
+		private async void btRaLow2_Click(object sender, EventArgs e)
 		{
-			_CancellationTokenSource = new CancellationTokenSource();
-			RotateAxis(TelescopeAxes.axisPrimary, -config.MoveRaRate * config.FastRateMultiplier, config.MoveRaTime * config.FastTimeMultiplier, _CancellationTokenSource.Token);
-			buttonLoadImage_Click(null, null);
+			await RotateAxis(TelescopeAxes.axisPrimary, -config.MoveRaRate * config.FastRateMultiplier, config.MoveRaTime * config.FastTimeMultiplier);
 		}
 
-		private void btRaLow_Click(object sender, EventArgs e)
+		private async void btRaLow_Click(object sender, EventArgs e)
 		{
-			_CancellationTokenSource = new CancellationTokenSource();
-			RotateAxis(TelescopeAxes.axisPrimary, -config.MoveRaRate, config.MoveRaTime, _CancellationTokenSource.Token);
-			buttonLoadImage_Click(null, null);
+			await RotateAxis(TelescopeAxes.axisPrimary, -config.MoveRaRate, config.MoveRaTime);
 		}
 
-		private void btRaHigh_Click(object sender, EventArgs e)
+		private async void btRaHigh_Click(object sender, EventArgs e)
 		{
-			_CancellationTokenSource = new CancellationTokenSource();
-			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaRate, config.MoveRaTime, _CancellationTokenSource.Token);
-			buttonLoadImage_Click(null, null);
+			await RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaRate, config.MoveRaTime);
 		}
 
-		private void btRaHigh2_Click(object sender, EventArgs e)
+		private async void btRaHigh2_Click(object sender, EventArgs e)
 		{
-			RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaRate * config.FastRateMultiplier, config.MoveRaTime * config.FastTimeMultiplier, _CancellationTokenSource.Token);
-			buttonLoadImage_Click(null, null);
+			await RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaRate * config.FastRateMultiplier, config.MoveRaTime * config.FastTimeMultiplier);
 		}
 
 		private async void btDecLow2_Click(object sender, EventArgs e)
 		{
-			_CancellationTokenSource = new CancellationTokenSource();
-			await RotateAxis(TelescopeAxes.axisSecondary, -config.MoveDecRate * config.FastRateMultiplier, config.MoveDecTime * config.FastTimeMultiplier, _CancellationTokenSource.Token);
-			buttonLoadImage_Click(null, null);
+			await RotateAxis(TelescopeAxes.axisSecondary, -config.MoveDecRate * config.FastRateMultiplier, config.MoveDecTime * config.FastTimeMultiplier);
 		}
 
 		private async void btDecLow_Click(object sender, EventArgs e)
 		{
-			_CancellationTokenSource = new CancellationTokenSource();
-			await RotateAxis(TelescopeAxes.axisSecondary, -config.MoveDecRate, config.MoveRaTime,_CancellationTokenSource.Token);
-			buttonLoadImage_Click(null, null);
+			await RotateAxis(TelescopeAxes.axisSecondary, -config.MoveDecRate, config.MoveRaTime);
 		}
 
 		private async void btDecHigh_Click(object sender, EventArgs e)
 		{
-			_CancellationTokenSource = new CancellationTokenSource();
-			await RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecRate, config.MoveRaTime, _CancellationTokenSource.Token);
-			buttonLoadImage_Click(null, null);
+			await RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecRate, config.MoveRaTime);
 		}
 
 		private async void btDecHigh2_Click(object sender, EventArgs e)
 		{
-			_CancellationTokenSource = new CancellationTokenSource();
-			await RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecRate * config.FastRateMultiplier, config.MoveDecTime * config.FastTimeMultiplier, _CancellationTokenSource.Token);
-			buttonLoadImage_Click(null, null);
+			await RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecRate * config.FastRateMultiplier, config.MoveDecTime * config.FastTimeMultiplier);
 		}
 
-		private async Task RotateAxis(TelescopeAxes axis, decimal rate, decimal time, CancellationToken cancellationToken)
+		private async Task RotateAxis(TelescopeAxes axis, decimal rate, decimal time)
 		{
-			if (_Telescope is null || _Telescope.Connected == false)
-				return;
-
-			if (_Telescope.AtPark)
+			_CancellationTokenSource = new CancellationTokenSource();
+			try
 			{
-				MessageBox.Show("Mount is At Park", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return;
+				await _vpDriver.RotateAxis(axis, rate, time, _CancellationTokenSource.Token);
 			}
-
-			if(cancellationToken.IsCancellationRequested) 
-				return;	
-			_Telescope.MoveAxis(axis, (double)rate);
-
-			var delay = (int)(time * 100);
-
-			await Task.Delay(delay,cancellationToken);
-			_Telescope.AbortSlew();			
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+			buttonLoadImage_Click(null, null);
 		}
 
 		private void btConnect_Click(object sender, EventArgs e)
 		{
-			if (_Telescope != null && _Telescope.Connected)
-				DisconnectTelescope();
+			if (_vpDriver.IsTelescopeConnected)
+				_vpDriver.DisconnectTelescope();
 			else
-				ConnectTelescope();
+				_vpDriver.ConnectTelescope();
 			UpdateMovementButtons();
 		}
 
 		private void UpdateMovementButtons()
 		{
-			bool canMove = false;
+			bool canMove;
 
-			if (_Telescope != null && _Telescope.Connected)
+			if (_vpDriver.IsTelescopeConnected)
 			{
 				btConnect.Text = "Disconnect";
 				btPark.Enabled = true;
-				if (_Telescope.AtPark)
+				if (_vpDriver.TelescopeState == TelescopeState.AtPark)
 				{
 					btPark.Text = "Unpark";
 					canMove = false;
@@ -490,7 +437,7 @@ namespace VisualMountParking
 					btPark.Text = "Park";
 					canMove = true;
 				}
-				if (_Telescope.Slewing)
+				if (_vpDriver.TelescopeState == TelescopeState.Moving)
 				{
 					btCancel.Visible = true;
 				}
@@ -513,9 +460,9 @@ namespace VisualMountParking
 
 		private void btCancel_Click(object sender, EventArgs e)
 		{
-			_Telescope.AbortSlew(); // per sicurezza
+			_vpDriver.StopTelescope(); // per sicurezza
 			_CancellationTokenSource.Cancel();
-			_Telescope.AbortSlew(); // per sicurezza
+			_vpDriver.StopTelescope(); // per sicurezza
 		}
 
 		bool loading = false;
@@ -524,9 +471,9 @@ namespace VisualMountParking
 			if (loading || ShowingOriginal)
 				return;
 			loading = true;
-			var image = await _WebUtils.LoadImageAsync(config.SourceType, config.Source);
-			if (!ShowingOriginal)
-				pictureBox2.Image = image;
+			//await _vpDriver.LoadNewImage();
+			await _vpDriver.UpdateImageAndPosition();
+			pictureBox2.Invalidate();
 			loading = false;
 		}
 
@@ -537,28 +484,22 @@ namespace VisualMountParking
 
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			DisconnectTelescope();
+			_vpDriver.DisconnectTelescope();
 		}
 
 		private async void btPark_Click(object sender, EventArgs e)
 		{
 			try
 			{
-				if (_Telescope == null || !_Telescope.Connected)
-					return;
-				if (_Telescope.AtPark)
-				{
-					_Telescope.Unpark();
-					_Telescope.Tracking = false;
-				}
+				if (_vpDriver.TelescopeState != TelescopeState.AtPark)
+					await _vpDriver.ParkTelescope();
 				else
-					await Task.Run(() => _Telescope.Park());
+					_vpDriver.UnParkTelescope();
 				UpdateMovementButtons();
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
-
 			}
 		}
 
@@ -568,29 +509,6 @@ namespace VisualMountParking
 		}
 
 		private async void btAutoPark_Click(object sender, EventArgs e)
-		{
-			btAutoPark.Enabled = false;
-			_CancellationTokenSource = new CancellationTokenSource();
-			try
-			{
-				AutoParkSetting AutoParkRA = new AutoParkSetting { ZoneId = 1, Direction = DirectionXY.Y };
-				AutoParkSetting AutoParkDec = new AutoParkSetting { ZoneId = 2, Direction = DirectionXY.Y };
-				//
-
-				var success = await AutoPark(TelescopeAxes.axisPrimary, config.MoveRaRate, config.MoveRaTime, AutoParkRA.ZoneId, AutoParkRA.Direction, AutoParkRA.Reverse, _CancellationTokenSource.Token);
-				if (success)
-					await AutoPark(TelescopeAxes.axisSecondary, config.MoveDecRate, config.MoveDecTime, AutoParkDec.ZoneId, AutoParkDec.Direction, AutoParkDec.Reverse, _CancellationTokenSource.Token);
-			}
-			catch { }
-			finally
-			{
-				btAutoPark.Enabled = true;
-			}
-		}
-
-		LogForm log;
-
-		private async Task<bool> AutoPark(TelescopeAxes axis, decimal moveRate, decimal moveTime, int zoneId, DirectionXY direction, bool reverse,CancellationToken cancellationToken)
 		{
 			// ensure log window is open
 			if (log != null && !log.Visible)
@@ -606,98 +524,34 @@ namespace VisualMountParking
 				log.Top = this.Top;
 			}
 
-			if (_Telescope == null || !_Telescope.Connected)
-				return false;
-			//
-			//	First movement: proportional to current position delta
-			//
-
-			var delta = await GetZoneDelta(zoneId, direction);
-			if (!delta.HasValue)
+			btAutoPark.Enabled = false;
+			_CancellationTokenSource = new CancellationTokenSource();
+			try
 			{
-				log.WriteLine("GetZoneDelta failed!");
-				return false;
-			}
+				_vpDriver.Logger = LogWriter;
+				AutoParkSetting AutoParkRA = new AutoParkSetting { ZoneId = 1, Direction = ShiftDirection.Y };
+				AutoParkSetting AutoParkDec = new AutoParkSetting { ZoneId = 2, Direction = ShiftDirection.Y };
+				//
 
-			log.WriteLine($"delta={delta}");
-			int nochangeRetry = 3;
- 
-			while(!cancellationToken.IsCancellationRequested && delta !=0)
+				var success = await _vpDriver.AutoPark(TelescopeAxes.axisPrimary, config.MoveRaRate, config.MoveRaTime, AutoParkRA.ZoneId, AutoParkRA.Direction, _CancellationTokenSource.Token);
+				if (success)
+					await _vpDriver.AutoPark(TelescopeAxes.axisSecondary, config.MoveDecRate, config.MoveDecTime, AutoParkDec.ZoneId, AutoParkDec.Direction, _CancellationTokenSource.Token);
+			}
+			catch { }
+			finally
 			{
-				//cancellationToken.ThrowIfCancellationRequested();
-				var pn = Math.Sign(delta.Value) ;
-
-				decimal rate = - moveRate * pn;
-				decimal time = moveTime * Math.Abs(delta.Value);
-				log.WriteLine($"RotateAxis({axis},{rate},{time})");
-				await RotateAxis(axis, rate, time,cancellationToken);
-				await CheckPosition();
-
-				var newDelta = await GetZoneDelta(zoneId, direction);
-				if (!newDelta.HasValue)
-				{
-					log.WriteLine("GetZoneDelta(new) failed!");
-					return false;
-				}
-
-				// check any change
-				if (newDelta == delta)
-				{
-					nochangeRetry--;
-					if (nochangeRetry > 0)
-					{
-						log.WriteLine("No change -> retry");
-						continue;
-					}
-					else
-					{
-						log.WriteLine("Failed after retry");
-						return false;
-					}
-				}
-				else
-					nochangeRetry = 3;
-
-				// check progress
-				var success = Math.Sign(delta.Value) > 0 ? newDelta < delta : newDelta > delta;
-				if (!success)
-				{
-					log.WriteLine($"Failed: old delta={delta}, newDelta={newDelta}");
-					return false;
-				}
-				log.WriteLine($"Step Ok: old delta={delta}, newDelta={newDelta}");
-				delta = newDelta;
+				btAutoPark.Enabled = true;
 			}
-			if (delta == 0)
-			{
-				log.WriteLine("Finish");
-				return true;
-			}
-			return false;
 		}
 
-		private async Task<int?> GetZoneDelta(int zoneId, DirectionXY direction)
+		private void LogWriter(string msg)
 		{
-			await CheckPosition();
-			var zone = patternVerifier.ZoneMatchList.Find((z) => z.ZoneId == zoneId);
-			if (zone == null) return null;
-
-			var delta = direction == DirectionXY.X ? zone.Target.X - zone.Source.X : zone.Target.Y - zone.Source.Y;
-			return delta;
+			log.Write(msg);
 		}
+
+		LogForm log;
+
 	}
 
-
-
-
-	public enum SelectionMode { off, WaitingEnd }
-
-	public class AutoParkSetting
-	{
-		public int ZoneId { get; set; }
-		public DirectionXY Direction { get; set; }
-		public bool Reverse { get; set; }
-	}
-	public enum DirectionXY { X, Y }
 
 }

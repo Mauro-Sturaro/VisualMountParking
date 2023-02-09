@@ -129,6 +129,6 @@ namespace VisualMountParking
 		}
 	}
 
-	public enum ImageSourceType { File, URL }
+	
 
 }

@@ -7,5 +7,5 @@
 		public string Body { get; set; }
 	}
 
-	public enum CommandVerb { Get, Post }
+
 }

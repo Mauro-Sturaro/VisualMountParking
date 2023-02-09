@@ -59,6 +59,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncUtil.cs" />
+    <Compile Include="AutoParkSetting.cs" />
     <Compile Include="BitmapJsonConverter.cs" />
     <Compile Include="CommandUri.cs" />
     <Compile Include="EditCommand.cs">
@@ -79,6 +80,8 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Enums.cs" />
+    <Compile Include="VisualParkDriver.cs" />
     <Compile Include="WebUtils.cs" />
     <Compile Include="PatternVerifier.cs" />
     <Compile Include="Program.cs" />
