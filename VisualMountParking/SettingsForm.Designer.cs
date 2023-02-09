@@ -280,7 +280,7 @@
             0,
             0});
 			this.numFastSpeed.Minimum = new decimal(new int[] {
-            2,
+            1,
             0,
             0,
             0});
@@ -288,7 +288,7 @@
 			this.numFastSpeed.Size = new System.Drawing.Size(57, 20);
 			this.numFastSpeed.TabIndex = 46;
 			this.numFastSpeed.Value = new decimal(new int[] {
-            2,
+            4,
             0,
             0,
             0});
@@ -312,7 +312,7 @@
             0,
             0});
 			this.numFastTime.Minimum = new decimal(new int[] {
-            2,
+            1,
             0,
             0,
             0});

@@ -84,7 +84,10 @@ namespace VisualMountParking
 			{
 				cfg = new Config();
 			}
+
+			//
 			// adjust some value
+			//
 			if (cfg.MoveRaRate == 0)
 				cfg.MoveRaRate = 1;
 			if (cfg.MoveDecRate == 0)
@@ -98,6 +101,12 @@ namespace VisualMountParking
 			if (cfg.FastTimeMultiplier < 1)
 				cfg.FastTimeMultiplier = 3;
 
+			for (int i = 0; i < cfg.Templates.Count; i++)
+			{
+				var t = cfg.Templates[i];
+				if(t.Id<=0)
+					t.Id = i+1;
+			}
 
 			return cfg;
 		}
@@ -110,7 +119,6 @@ namespace VisualMountParking
 			newcfg.ReferenceImage = new Bitmap(ReferenceImage);
 			return newcfg;
 		}
-
 
 		private Bitmap CopyBitmap(Bitmap bitmap)
 		{

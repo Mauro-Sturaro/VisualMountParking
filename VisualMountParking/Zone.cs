@@ -1,7 +1,8 @@
 ﻿namespace VisualMountParking
 {
-	public struct Zone
+	public class Zone
 	{
+		public int Id { get; set; }
 		public int X { get; set; }
 		public int Y { get; set; }
 		public int Width { get; set; }

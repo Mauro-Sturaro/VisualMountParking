@@ -29,6 +29,7 @@ namespace VisualMountParking
 					target.X += reducedZone.X;
 					target.Y += reducedZone.Y;
 					zm.Target = target;
+					zm.ZoneId = zone.Id;
 					ZoneMatchList.Add(zm);
 				}
 			}
