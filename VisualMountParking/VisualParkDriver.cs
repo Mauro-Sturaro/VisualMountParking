@@ -1,15 +1,9 @@
-﻿using Accord.Statistics.Kernels;
-using Accord;
-using ASCOM.DeviceInterface;
+﻿using ASCOM.DeviceInterface;
 using ASCOM.DriverAccess;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using Accord.Controls;
 using System.Drawing;
 
 namespace VisualMountParking
@@ -23,17 +17,10 @@ namespace VisualMountParking
 
 		public Bitmap CurrentImage { get; private set; }
 
-		[Obsolete]
-		public PatternVerifier PatternVerifier => _PatternVerifier;
-
-		public Config Config
+		public void Initialize(Config config)
 		{
-			get { return _Config; }
-			set
-			{
-				_Config = value;
-				_PatternVerifier.Config = value;
-			}
+			_Config = config;
+			_PatternVerifier.Initialize(config);
 		}
 
 		public void ConnectTelescope()
@@ -92,9 +79,6 @@ namespace VisualMountParking
 
 		public bool IsTelescopeConnected => _Telescope != null && _Telescope.Connected;
 
-		[Obsolete]
-		public Telescope Telescope => _Telescope;
-
 		public async Task RotateAxis(TelescopeAxes axis, decimal rate, decimal time, CancellationToken cancellationToken)
 		{
 			if (!IsTelescopeConnected)
@@ -110,8 +94,6 @@ namespace VisualMountParking
 			await Task.Delay(delay, cancellationToken);
 			_Telescope.MoveAxis(axis, 0);
 		}
-
-
 
 		public TelescopeState TelescopeState
 		{
@@ -137,7 +119,7 @@ namespace VisualMountParking
 			Logger("\r\n");
 		}
 
-		public async Task<bool> AutoPark(TelescopeAxes axis, decimal moveRate, decimal moveTime, int zoneId, ShiftDirection direction, CancellationToken cancellationToken)
+		private async Task<bool> AutoPark(TelescopeAxes axis, decimal moveRate, decimal moveTime, int zoneId, ShiftDirection direction, CancellationToken cancellationToken)
 		{
 			if (!IsTelescopeConnected)
 				return false;
@@ -219,26 +201,17 @@ namespace VisualMountParking
 			return delta;
 		}
 
-
-
 		public async Task UpdateImageAndPosition()
 		{
-			//_PatternVerifier.ZoneMatchList.Clear();
-			//var image = await _WebUtils.LoadImageAsync(_Config.SourceType, _Config.Source);
-			//_PatternVerifier.NewImage = new Bitmap(image);
-			//// ToDo: Notify Image Change
-			////pictureBox2.Image = patternVerifier.NewImage;
-			//_PatternVerifier.SearchMatch();
 			await LoadNewImage();
 			await CheckPosition();
 		}
 
-		EventHandler _ImageUpdated;
-		public event EventHandler ImageUpdated { add { _ImageUpdated += value; } remove {_ImageUpdated-=value; } }
+		private EventHandler _ImageUpdated;
+		public event EventHandler ImageUpdated { add { _ImageUpdated += value; } remove { _ImageUpdated -= value; } }
 
 		public async Task<Image> LoadNewImage()
 		{
-			//_PatternVerifier.ZoneMatchList.Clear();
 			var image = await _WebUtils.LoadImageAsync(_Config.SourceType, _Config.Source);
 			CurrentImage = new Bitmap(image);
 			_ImageUpdated?.Invoke(this, EventArgs.Empty);
@@ -248,13 +221,35 @@ namespace VisualMountParking
 
 		public async Task CheckPosition()
 		{
-		//	_PatternVerifier.ZoneMatchList.Clear();
 			await Task.Run(_PatternVerifier.SearchMatch);
 		}
 
+		public async Task<bool> DoVisualPark(CancellationToken cancellationToken)
+		{
+			// Questi devono stare nei settings
+			var apRA = _Config.AutoParkAR;
+			var apDec = _Config.AutoParkDec;
+			//
+
+			var success = await AutoPark(TelescopeAxes.axisPrimary, _Config.MoveRaRate, _Config.MoveRaTime, apRA.ZoneId, apRA.Direction, cancellationToken);
+			if (success)
+				success = await AutoPark(TelescopeAxes.axisSecondary, _Config.MoveDecRate, _Config.MoveDecTime, apDec.ZoneId, apDec.Direction, cancellationToken);
+			return success;
+		}
+
+		internal IList<Zone> GetReferenceZone()
+		{
+			if (_Config.UseArucoMarkers)
+			{
+				return _PatternVerifier.ReferenceTemplates;
+			}
+			else
+				return _Config.Templates;
+		}
+
+		internal IList<ZoneMatch> GetZoneMatch()
+		{
+			return _PatternVerifier.ZoneMatchList;
+		}
 	}
-
-	 
-
-	public enum TelescopeState { Disconnected, AtPark, Quiet, Moving }
 }

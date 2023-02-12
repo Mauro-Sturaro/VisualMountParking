@@ -30,10 +30,9 @@
 		{
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-			this.pictureBox1 = new System.Windows.Forms.PictureBox();
-			this.pictureBox2 = new System.Windows.Forms.PictureBox();
+			this.picReference = new System.Windows.Forms.PictureBox();
+			this.picCurrent = new System.Windows.Forms.PictureBox();
 			this.buttonLoadImage = new System.Windows.Forms.Button();
-			this.btSetRefImage = new System.Windows.Forms.Button();
 			this.chkImageSize = new System.Windows.Forms.CheckBox();
 			this.btSettings = new System.Windows.Forms.Button();
 			this.btLightON = new System.Windows.Forms.Button();
@@ -56,57 +55,47 @@
 			this.btPark = new System.Windows.Forms.Button();
 			this.timerMountStat = new System.Windows.Forms.Timer(this.components);
 			this.btAutoPark = new System.Windows.Forms.Button();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.picReference)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.picCurrent)).BeginInit();
 			this.SuspendLayout();
 			// 
-			// pictureBox1
+			// picReference
 			// 
-			this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.pictureBox1.Location = new System.Drawing.Point(10, 60);
-			this.pictureBox1.Name = "pictureBox1";
-			this.pictureBox1.Size = new System.Drawing.Size(595, 415);
-			this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.pictureBox1.TabIndex = 6;
-			this.pictureBox1.TabStop = false;
-			this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
-			this.pictureBox1.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox1_Paint);
-			this.pictureBox1.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseDown);
-			this.pictureBox1.MouseMove += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseMove);
-			this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox1_MouseUp);
+			this.picReference.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.picReference.Location = new System.Drawing.Point(294, 60);
+			this.picReference.Name = "picReference";
+			this.picReference.Size = new System.Drawing.Size(311, 415);
+			this.picReference.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.picReference.TabIndex = 6;
+			this.picReference.TabStop = false;
+			this.picReference.Click += new System.EventHandler(this.picReference_Click);
+			this.picReference.Paint += new System.Windows.Forms.PaintEventHandler(this.picReference_Paint);
+			this.picReference.MouseDown += new System.Windows.Forms.MouseEventHandler(this.picReference_MouseDown);
+			this.picReference.MouseMove += new System.Windows.Forms.MouseEventHandler(this.picReference_MouseMove);
+			this.picReference.MouseUp += new System.Windows.Forms.MouseEventHandler(this.picReference_MouseUp);
 			// 
-			// pictureBox2
+			// picCurrent
 			// 
-			this.pictureBox2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.pictureBox2.Location = new System.Drawing.Point(516, 389);
-			this.pictureBox2.Name = "pictureBox2";
-			this.pictureBox2.Size = new System.Drawing.Size(98, 120);
-			this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-			this.pictureBox2.TabIndex = 7;
-			this.pictureBox2.TabStop = false;
-			this.pictureBox2.Paint += new System.Windows.Forms.PaintEventHandler(this.pictureBox2_Paint);
-			this.pictureBox2.MouseDown += new System.Windows.Forms.MouseEventHandler(this.pictureBox2_MouseDown);
-			this.pictureBox2.MouseUp += new System.Windows.Forms.MouseEventHandler(this.pictureBox2_MouseUp);
+			this.picCurrent.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.picCurrent.Location = new System.Drawing.Point(10, 60);
+			this.picCurrent.Name = "picCurrent";
+			this.picCurrent.Size = new System.Drawing.Size(278, 415);
+			this.picCurrent.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+			this.picCurrent.TabIndex = 7;
+			this.picCurrent.TabStop = false;
+			this.picCurrent.Paint += new System.Windows.Forms.PaintEventHandler(this.picCurrent_Paint);
+			this.picCurrent.MouseDown += new System.Windows.Forms.MouseEventHandler(this.picCurrent_MouseDown);
+			this.picCurrent.MouseUp += new System.Windows.Forms.MouseEventHandler(this.picCurrent_MouseUp);
 			// 
 			// buttonLoadImage
 			// 
-			this.buttonLoadImage.Location = new System.Drawing.Point(55, 4);
+			this.buttonLoadImage.Location = new System.Drawing.Point(43, 5);
 			this.buttonLoadImage.Name = "buttonLoadImage";
-			this.buttonLoadImage.Size = new System.Drawing.Size(79, 23);
+			this.buttonLoadImage.Size = new System.Drawing.Size(56, 35);
 			this.buttonLoadImage.TabIndex = 16;
 			this.buttonLoadImage.Text = "Load Image";
 			this.buttonLoadImage.UseVisualStyleBackColor = true;
 			this.buttonLoadImage.Click += new System.EventHandler(this.buttonLoadImage_Click);
-			// 
-			// btSetRefImage
-			// 
-			this.btSetRefImage.Location = new System.Drawing.Point(55, 31);
-			this.btSetRefImage.Name = "btSetRefImage";
-			this.btSetRefImage.Size = new System.Drawing.Size(79, 23);
-			this.btSetRefImage.TabIndex = 21;
-			this.btSetRefImage.Text = "Set ref Image";
-			this.btSetRefImage.UseVisualStyleBackColor = true;
-			this.btSetRefImage.Click += new System.EventHandler(this.btSetRefImage_Click);
 			// 
 			// chkImageSize
 			// 
@@ -328,7 +317,7 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(622, 521);
+			this.ClientSize = new System.Drawing.Size(625, 521);
 			this.Controls.Add(this.btAutoPark);
 			this.Controls.Add(this.btPark);
 			this.Controls.Add(this.chkUpdateImage);
@@ -348,18 +337,17 @@
 			this.Controls.Add(this.btLightON);
 			this.Controls.Add(this.btSettings);
 			this.Controls.Add(this.chkImageSize);
-			this.Controls.Add(this.btSetRefImage);
 			this.Controls.Add(this.buttonLoadImage);
-			this.Controls.Add(this.pictureBox2);
-			this.Controls.Add(this.pictureBox1);
+			this.Controls.Add(this.picCurrent);
+			this.Controls.Add(this.picReference);
 			this.Controls.Add(this.btCancel);
 			this.Name = "MainForm";
 			this.Text = "ChekMountPosition";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
 			this.Load += new System.EventHandler(this.MainForm_Load);
 			this.Resize += new System.EventHandler(this.MainForm_Resize);
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-			((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.picReference)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.picCurrent)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -367,10 +355,9 @@
 
 		#endregion
 
-		private System.Windows.Forms.PictureBox pictureBox1;
-		private System.Windows.Forms.PictureBox pictureBox2;
+		private System.Windows.Forms.PictureBox picReference;
+		private System.Windows.Forms.PictureBox picCurrent;
 		private System.Windows.Forms.Button buttonLoadImage;
-		private System.Windows.Forms.Button btSetRefImage;
 		private System.Windows.Forms.CheckBox chkImageSize;
 		private System.Windows.Forms.Button btSettings;
 		private System.Windows.Forms.Button btLightON;

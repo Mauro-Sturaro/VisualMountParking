@@ -11,27 +11,45 @@ namespace VisualMountParking
 
 	public class Config
 	{
+		#region AutoPark settings
 		public List<Zone> Templates { get; set; } = new List<Zone>();
+		public bool UseArucoMarkers { get; set; }
+		public AutoParkSetting AutoParkAR { get; set; }
+		public AutoParkSetting AutoParkDec { get; set; }
 
-		//[JsonConverter(typeof(BitmapJsonConverter))]
-		[JsonIgnore]
+		#endregion
+
+
+		#region Image settings
+
+		[JsonIgnore] // We save the image as a distinct file
 		public Bitmap ReferenceImage { get; set; }
 		public string Source { get; set; }
 		public ImageSourceType SourceType { get; set; }
 
+		#endregion
+
+		#region Action settings
+
 		public CommandUri LightOnCommand { get; set; }
 		public CommandUri LightOffCommand { get; set; }
+
+		#endregion
+
+		#region Telescope setting
 		public string TelescopeDriver { get; set; }
 
-		// Move settings
 		public decimal MoveRaRate { get; set; }
 		public decimal MoveDecRate { get; set; }
 
 		public decimal MoveRaTime { get; set; }
 		public decimal MoveDecTime { get; set; }
-		public decimal FastTimeMultiplier { get;  set; }
-		public decimal FastRateMultiplier { get;  set; }
 
+		public decimal FastTimeMultiplier { get; set; }
+		public decimal FastRateMultiplier { get; set; }
+		#endregion
+
+		#region Private Methods
 		private static string GetConfigPath()
 		{
 			string appName = "VisualMountParking";
@@ -40,7 +58,6 @@ namespace VisualMountParking
 				Directory.CreateDirectory(appdata);
 			return appdata;
 		}
-		//--------------------
 		private static string GetConfigFilename()
 		{
 			var appdata = GetConfigPath();
@@ -53,7 +70,9 @@ namespace VisualMountParking
 			var configFilename = Path.Combine(appdata, "ReferenceImage.png");
 			return configFilename;
 		}
+		#endregion
 
+		#region Public Methods
 		public void Save()
 		{
 			var filename = GetConfigFilename();
@@ -100,12 +119,16 @@ namespace VisualMountParking
 				cfg.FastRateMultiplier = 2;
 			if (cfg.FastTimeMultiplier < 1)
 				cfg.FastTimeMultiplier = 3;
+			if(cfg.AutoParkAR is null)
+				cfg.AutoParkAR=new AutoParkSetting();
+			if(cfg.AutoParkDec is null)
+				cfg.AutoParkDec=new AutoParkSetting();
 
 			for (int i = 0; i < cfg.Templates.Count; i++)
 			{
 				var t = cfg.Templates[i];
-				if(t.Id<=0)
-					t.Id = i+1;
+				if (t.Id <= 0)
+					t.Id = i + 1;
 			}
 
 			return cfg;
@@ -119,16 +142,7 @@ namespace VisualMountParking
 			newcfg.ReferenceImage = new Bitmap(ReferenceImage);
 			return newcfg;
 		}
-
-		private Bitmap CopyBitmap(Bitmap bitmap)
-		{
-			var ms = new MemoryStream();
-			bitmap.Save(ms, ImageFormat.Png);
-			ms.Position = 0;
-			return (Bitmap)Image.FromStream(ms);
-		}
+		#endregion
 	}
-
-	
 
 }

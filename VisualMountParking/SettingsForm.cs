@@ -1,4 +1,4 @@
-﻿using Accord.Controls;
+﻿//using Accord.Controls;
 using ASCOM.DriverAccess;
 using System;
 using System.Collections.Generic;
@@ -28,18 +28,58 @@ namespace VisualMountParking
 			var il = new WebUtils();
 			var img = il.LoadImage(Config.SourceType, Config.Source);
 			picPreview.Image = img;
+			if (img != null)
+			{
+				btSetAsReference.Enabled = true;
+				btExportPreview.Enabled = true;
+			}
+
 		}
 
 		private void btSave_Click(object sender, EventArgs e)
 		{
-			StoreMoveSettings();
+			CopyFormToConfig();
 
-			DialogResult = DialogResult.OK;
+			//DialogResult = DialogResult.OK;
 			Config.Save();
-			this.Close();
+			//this.Close();
 		}
 
-		private void StoreMoveSettings()
+
+		private void SettingsForm_Load(object sender, EventArgs e)
+		{
+			CopyConfigToForm();
+		}
+
+		private void CopyConfigToForm()
+		{
+			// Telescope
+			txtTelescopeDriver.Text = Config.TelescopeDriver;
+
+			numRaRrate.Value = Config.MoveRaRate;
+			numDecRate.Value = Config.MoveDecRate;
+
+			numRaTime.Value = Config.MoveRaTime;
+			numDecTime.Value = Config.MoveDecTime;
+
+			numFastSpeed.Value = Config.FastRateMultiplier;
+			numFastTime.Value = Config.FastTimeMultiplier;
+
+			// Image
+			cmbSourceType.SelectedIndex = (int)Config.SourceType;
+			txtSource.Text = Config.Source;
+
+			// AutoPark
+			txtRegionsCount.Text = Config.Templates.Count.ToString();
+			chkUseAruco.Checked = Config.UseArucoMarkers;
+			numMarkerIdAr.Value = Config.AutoParkAR.ZoneId;
+			numMarkerIdDec.Value = Config.AutoParkDec.ZoneId;
+			cmbMarkerArDirection.SelectedIndex = Config.AutoParkAR.Direction == ShiftDirection.X? 0 : 1;
+			cmbMarkerDecDirection.SelectedIndex = Config.AutoParkDec.Direction == ShiftDirection.X ? 0 : 1;
+
+
+		}
+		private void CopyFormToConfig()
 		{
 			Config.MoveRaRate = numRaRrate.Value;
 			Config.MoveDecRate = numDecRate.Value;
@@ -47,21 +87,13 @@ namespace VisualMountParking
 			Config.MoveDecTime = numDecTime.Value;
 			Config.FastRateMultiplier = numFastSpeed.Value;
 			Config.FastTimeMultiplier = numFastTime.Value;
-		}
 
-		private void SettingsForm_Load(object sender, EventArgs e)
-		{
-			numRaRrate.Value = Config.MoveRaRate;
-			numDecRate.Value = Config.MoveDecRate;
-			numRaTime.Value = Config.MoveRaTime;
-			numDecTime.Value = Config.MoveDecTime;
-			numFastSpeed.Value = Config.FastRateMultiplier;
-			numFastTime.Value = Config.FastTimeMultiplier;
-
-			cmbSourceType.SelectedIndex = (int)Config.SourceType;
-			txtRegionsCount.Text = Config.Templates.Count.ToString();
-			txtSource.Text = Config.Source;
-			txtTelescopeDriver.Text = Config.TelescopeDriver;
+			// AutoPark			
+			Config.UseArucoMarkers = chkUseAruco.Checked;
+			Config.AutoParkAR.ZoneId =(int)numMarkerIdAr.Value;
+			Config.AutoParkDec.ZoneId = (int)numMarkerIdDec.Value;
+			Config.AutoParkAR.Direction = cmbMarkerArDirection.SelectedIndex == 0 ? ShiftDirection.X: ShiftDirection.Y;
+			Config.AutoParkDec.Direction = cmbMarkerDecDirection.SelectedIndex == 0 ? ShiftDirection.X : ShiftDirection.Y;
 		}
 
 		private void txtSource_Validated(object sender, EventArgs e)
@@ -73,6 +105,15 @@ namespace VisualMountParking
 		{
 
 			Config.SourceType = (ImageSourceType)cmbSourceType.SelectedIndex;
+			switch (Config.SourceType)
+			{
+				case ImageSourceType.File:
+					lblSource.Text = "Path:";
+					break;
+				case ImageSourceType.URL:
+					lblSource.Text = "URL:";
+					break;
+			}
 		}
 
 		private void btRegionsClear_Click(object sender, EventArgs e)
@@ -131,7 +172,17 @@ namespace VisualMountParking
 
 		private void SettingsForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			StoreMoveSettings();
+			//StoreMoveSettings();
+		}
+
+		private void btSetAsReference_Click(object sender, EventArgs e)
+		{
+			Config.ReferenceImage = new Bitmap(picPreview.Image);
+		}
+
+		private void btApply_Click(object sender, EventArgs e)
+		{
+			CopyFormToConfig();
 		}
 	}
 }

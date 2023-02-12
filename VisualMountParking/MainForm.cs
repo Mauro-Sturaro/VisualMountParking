@@ -20,16 +20,14 @@ namespace VisualMountParking
 		Point _SelectionLastPoint;
 		WebUtils _WebUtils = new WebUtils();
 		VisualParkDriver _vpDriver = new VisualParkDriver();
-		PatternVerifier patternVerifier => _vpDriver.PatternVerifier;
 
 		public MainForm()
 		{
 			InitializeComponent();
 			this.Icon = Resources._2bs_logo;
-			//this.Width = pictureBox1.Width + 2 * pictureBox1.Left + (this.Width - ClientSize.Width);
 		}
 
-		private Config config { get { return _vpDriver.Config; } set { _vpDriver.Config = value; } }
+		private Config config; //{ get { return _vpDriver.Config; } set { _vpDriver.Config = value; } }
 
 		public bool ShowRefImage
 		{
@@ -46,57 +44,60 @@ namespace VisualMountParking
 			ShowRefImage = false;
 			MainForm_Resize(sender, e);
 			config = Config.Load();
-			_vpDriver.Config = config;
+			_vpDriver.Initialize(config);
 
 			UpdateMovementButtons();
 			btCancel.BringToFront();
 
-			pictureBox1.Image = config.ReferenceImage;
+			picReference.Image = config.ReferenceImage;
 			_vpDriver.ImageUpdated += _vpDriver_ImageUpdated;
-			await _vpDriver.LoadNewImage();
+			//await _vpDriver.LoadNewImage();
+			await _vpDriver.UpdateImageAndPosition();
 		}
 
 		private void _vpDriver_ImageUpdated(object sender, EventArgs e)
 		{
 			if (!ShowingOriginal)
-				pictureBox2.Image = _vpDriver.CurrentImage;
+				picCurrent.Image = _vpDriver.CurrentImage;
 		}
 
 		private async void buttonLoadImage_Click(object sender, EventArgs e)
 		{
-			pictureBox2.Image = await _vpDriver.LoadNewImage();
-			await _vpDriver.CheckPosition();
-			pictureBox2.Invalidate();
+			//picCurrent.Image = await _vpDriver.LoadNewImage();
+			//await _vpDriver.CheckPosition();
+			await _vpDriver.UpdateImageAndPosition();
+			picCurrent.Invalidate();
 		}
 
 		private void btSetRefImage_Click(object sender, EventArgs e)
 		{
-			_vpDriver.Config.ReferenceImage = _vpDriver.CurrentImage;
-			pictureBox1.Image = _vpDriver.CurrentImage;
+			config.ReferenceImage = _vpDriver.CurrentImage;
+			_vpDriver.Initialize(config);
+			picReference.Image = _vpDriver.CurrentImage;
 		}
-		private void pictureBox1_MouseDown(object sender, MouseEventArgs e)
+		private void picReference_MouseDown(object sender, MouseEventArgs e)
 		{
-			if (_MouseDragging == false)
+			if (_MouseDragging == false && !config.UseArucoMarkers)
 			{
 				_SelectionFirstPoint = e.Location;
 				_MouseDragging = true;
-				pictureBox1.Cursor = Cursors.Cross;
+				picReference.Cursor = Cursors.Cross;
 			}
 		}
 
-		private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
+		private void picReference_MouseMove(object sender, MouseEventArgs e)
 		{
 			_SelectionLastPoint = e.Location;
-			pictureBox1.Invalidate();
+			picReference.Invalidate();
 		}
 
-		private void pictureBox1_MouseUp(object sender, MouseEventArgs e)
+		private void picReference_MouseUp(object sender, MouseEventArgs e)
 		{
 			if (_MouseDragging)
 			{
 
 				//
-				GetStretch(pictureBox1, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
+				GetStretch(picReference, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
 
 				// Raddrizza le coordinate se necessario
 				SortPoint(_SelectionFirstPoint, e.Location, out var startPoint, out var endPoint);
@@ -136,13 +137,13 @@ namespace VisualMountParking
 			bottomRight = new Point(Math.Max(point1.X, point2.X), Math.Max(point1.Y, point2.Y));
 		}
 
-		private void pictureBox1_Paint(object sender, PaintEventArgs e)
+		private void picReference_Paint(object sender, PaintEventArgs e)
 		{
-			if (pictureBox1.Image == null)
+			if (picReference.Image == null)
 				return;
 			GetStretch((PictureBox)sender, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
 			var g = e.Graphics;
-			foreach (var tp in config.Templates)
+			foreach (var tp in _vpDriver.GetReferenceZone())
 			{
 				int x = (int)(tp.X * stretchX) + shiftX;
 				int y = (int)(tp.Y * stretchY) + shiftY;
@@ -180,10 +181,10 @@ namespace VisualMountParking
 			}
 		}
 
-		private void pictureBox1_Click(object sender, EventArgs e)
+		private void picReference_Click(object sender, EventArgs e)
 		{
 			MouseEventArgs me = (MouseEventArgs)e;
-			GetStretch(pictureBox1, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
+			GetStretch(picReference, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
 			var X = (me.X - shiftX) / stretchX;
 			var Y = (me.Y - shiftY) / stretchY;
 			for (int i = config.Templates.Count - 1; i >= 0; i--)
@@ -201,45 +202,51 @@ namespace VisualMountParking
 		static Pen bluePen = new Pen(Color.Blue, 1);
 		static Pen redPen = new Pen(Color.DarkRed, 1);
 		static Font drawFont = new Font("Arial", 10);
-		static SolidBrush drawBrush = new SolidBrush(Color.DarkRed);
+		static SolidBrush drawBrush = new SolidBrush(Color.Gold);
 
-		private void pictureBox2_Paint(object sender, PaintEventArgs e)
+		private void picCurrent_Paint(object sender, PaintEventArgs e)
 		{
-			if (pictureBox2.Image == null)
+			if (picCurrent.Image == null)
 				return;
 			GetStretch((PictureBox)sender, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
 			var g = e.Graphics;
-			foreach (var zoneMatch in patternVerifier.ZoneMatchList)
+			foreach (var zoneMatch in _vpDriver.GetZoneMatch())
 			{
 				var sp = zoneMatch.Source;
 				var tp = zoneMatch.Target;
 
-				var x = (int)(sp.X * stretchX) + shiftX;
-				var y = (int)(sp.Y * stretchY) + shiftY;
+				var x = (int)(sp?.X * stretchX) + shiftX;
+				var y = (int)(sp?.Y * stretchY) + shiftY;
 
-				if (sp.X == tp.X && sp.Y == tp.Y && sp.Width == tp.Width && sp.Height == tp.Height)
+				if (sp != null && tp != null && sp.X == tp.X && sp.Y == tp.Y && sp.Width == tp.Width && sp.Height == tp.Height)
 				{
 					g.DrawRectangle(greenPen, x, y, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
 				}
 				else
 				{
-
-					g.DrawRectangle(bluePen, x, y, (int)(sp.Width * stretchX), (int)(sp.Height * stretchY));
-					var x1 = (int)(tp.X * stretchX) + shiftX;
-					var y1 = (int)(tp.Y * stretchY) + shiftY;
-					g.DrawRectangle(redPen, x1, y1, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
-					//---
-					var msg = $"{tp.X - sp.X},{tp.Y - sp.Y}";
-
-					g.DrawString(msg, drawFont, drawBrush, x1 + 2, y1 + 2);
+					if (sp != null)
+					{
+						g.DrawRectangle(bluePen, x, y, (int)(sp.Width * stretchX), (int)(sp.Height * stretchY));
+					}
+					if (tp != null)
+					{
+						var x1 = (int)(tp.X * stretchX) + shiftX;
+						var y1 = (int)(tp.Y * stretchY) + shiftY;
+						g.DrawRectangle(redPen, x1, y1, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
+						if (sp != null)
+						{
+							var msg = $"{tp.X - sp.X},{tp.Y - sp.Y}";
+							g.DrawString(msg, drawFont, drawBrush, x1 + 2, y1 + 2);
+						}
+					}
 				}
 			}
 		}
 
 		private void MainForm_Resize(object sender, EventArgs e)
 		{
-			var dX = pictureBox1.Left;
-			var top = pictureBox1.Top;
+			var dX = picCurrent.Left;
+			var top = picCurrent.Top;
 			var height = ClientSize.Height - top - dX;
 
 			int width;
@@ -248,18 +255,17 @@ namespace VisualMountParking
 			else
 				width = ClientSize.Width - dX * 2;
 
-			pictureBox1.Top = pictureBox2.Top = top;
-			pictureBox1.Width = pictureBox2.Width = width;
-			pictureBox1.Height = pictureBox2.Height = height;
+			picReference.Top = picCurrent.Top = top;
+			picReference.Width = picCurrent.Width = width;
+			picReference.Height = picCurrent.Height = height;
+			picReference.Left = width + dX * 2;
 			if (ShowRefImage)
 			{
-				pictureBox1.Visible = true;
-				pictureBox2.Left = width + dX * 2;
+				picReference.Visible = true;
 			}
 			else
 			{
-				pictureBox1.Visible = false;
-				pictureBox2.Left = dX;
+				picReference.Visible = false;
 			}
 		}
 
@@ -267,16 +273,16 @@ namespace VisualMountParking
 		{
 			if (chkImageSize.Checked)
 			{
-				pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-				pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
+				picReference.SizeMode = PictureBoxSizeMode.Zoom;
+				picCurrent.SizeMode = PictureBoxSizeMode.Zoom;
 			}
 			else
 			{
-				pictureBox1.SizeMode = PictureBoxSizeMode.Normal;
-				pictureBox2.SizeMode = PictureBoxSizeMode.Normal;
+				picReference.SizeMode = PictureBoxSizeMode.Normal;
+				picCurrent.SizeMode = PictureBoxSizeMode.Normal;
 			}
-			pictureBox1.Invalidate();
-			pictureBox2.Invalidate();
+			picReference.Invalidate();
+			picCurrent.Invalidate();
 
 		}
 
@@ -289,20 +295,22 @@ namespace VisualMountParking
 				if (f.ShowDialog(this) == DialogResult.OK)
 				{
 					config = f.Config;
+					_vpDriver.Initialize(config);
+					picReference.Image = config.ReferenceImage;
 				}
 			}
 		}
 
 		bool ShowingOriginal = false;
-		private void pictureBox2_MouseDown(object sender, MouseEventArgs e)
+		private void picCurrent_MouseDown(object sender, MouseEventArgs e)
 		{
 			ShowingOriginal = true;
-			pictureBox2.Image = patternVerifier.Config.ReferenceImage;
+			picCurrent.Image = config.ReferenceImage;
 		}
 
-		private void pictureBox2_MouseUp(object sender, MouseEventArgs e)
+		private void picCurrent_MouseUp(object sender, MouseEventArgs e)
 		{
-			pictureBox2.Image = patternVerifier.NewImage;
+			picCurrent.Image = _vpDriver.CurrentImage;
 			ShowingOriginal = false;
 		}
 
@@ -342,7 +350,7 @@ namespace VisualMountParking
 
 		private void chkShowRef_CheckedChanged(object sender, EventArgs e)
 		{
-			var deltaSize = pictureBox1.Width + pictureBox1.Left;
+			var deltaSize = picCurrent.Width + picCurrent.Left;
 			if (chkShowRef.Checked)
 			{
 				this.Width += deltaSize;
@@ -471,9 +479,8 @@ namespace VisualMountParking
 			if (loading || ShowingOriginal)
 				return;
 			loading = true;
-			//await _vpDriver.LoadNewImage();
 			await _vpDriver.UpdateImageAndPosition();
-			pictureBox2.Invalidate();
+			picCurrent.Invalidate();
 			loading = false;
 		}
 
@@ -529,13 +536,7 @@ namespace VisualMountParking
 			try
 			{
 				_vpDriver.Logger = LogWriter;
-				AutoParkSetting AutoParkRA = new AutoParkSetting { ZoneId = 1, Direction = ShiftDirection.Y };
-				AutoParkSetting AutoParkDec = new AutoParkSetting { ZoneId = 2, Direction = ShiftDirection.Y };
-				//
-
-				var success = await _vpDriver.AutoPark(TelescopeAxes.axisPrimary, config.MoveRaRate, config.MoveRaTime, AutoParkRA.ZoneId, AutoParkRA.Direction, _CancellationTokenSource.Token);
-				if (success)
-					await _vpDriver.AutoPark(TelescopeAxes.axisSecondary, config.MoveDecRate, config.MoveDecTime, AutoParkDec.ZoneId, AutoParkDec.Direction, _CancellationTokenSource.Token);
+				var success = await _vpDriver.DoVisualPark(_CancellationTokenSource.Token);
 			}
 			catch { }
 			finally
