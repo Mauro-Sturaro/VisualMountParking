@@ -109,9 +109,11 @@ namespace VisualMountParking
 			{
 				case ImageSourceType.File:
 					lblSource.Text = "Path:";
+					txtSource.AutoCompleteSource = AutoCompleteSource.FileSystem;
 					break;
 				case ImageSourceType.URL:
 					lblSource.Text = "URL:";
+					txtSource.AutoCompleteSource = AutoCompleteSource.HistoryList;
 					break;
 			}
 		}

@@ -55,8 +55,12 @@
 			this.btPark = new System.Windows.Forms.Button();
 			this.timerMountStat = new System.Windows.Forms.Timer(this.components);
 			this.btAutoPark = new System.Windows.Forms.Button();
+			this.tbLum = new System.Windows.Forms.TrackBar();
+			this.tbContrast = new System.Windows.Forms.TrackBar();
 			((System.ComponentModel.ISupportInitialize)(this.picReference)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.picCurrent)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.tbLum)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.tbContrast)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// picReference
@@ -91,7 +95,7 @@
 			// 
 			this.buttonLoadImage.Location = new System.Drawing.Point(43, 5);
 			this.buttonLoadImage.Name = "buttonLoadImage";
-			this.buttonLoadImage.Size = new System.Drawing.Size(56, 35);
+			this.buttonLoadImage.Size = new System.Drawing.Size(56, 48);
 			this.buttonLoadImage.TabIndex = 16;
 			this.buttonLoadImage.Text = "Load Image";
 			this.buttonLoadImage.UseVisualStyleBackColor = true;
@@ -102,7 +106,7 @@
 			this.chkImageSize.AutoSize = true;
 			this.chkImageSize.Checked = true;
 			this.chkImageSize.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.chkImageSize.Location = new System.Drawing.Point(148, 5);
+			this.chkImageSize.Location = new System.Drawing.Point(189, 5);
 			this.chkImageSize.Name = "chkImageSize";
 			this.chkImageSize.Size = new System.Drawing.Size(88, 17);
 			this.chkImageSize.TabIndex = 25;
@@ -115,14 +119,14 @@
 			this.btSettings.Image = ((System.Drawing.Image)(resources.GetObject("btSettings.Image")));
 			this.btSettings.Location = new System.Drawing.Point(10, 5);
 			this.btSettings.Name = "btSettings";
-			this.btSettings.Size = new System.Drawing.Size(27, 34);
+			this.btSettings.Size = new System.Drawing.Size(27, 48);
 			this.btSettings.TabIndex = 26;
 			this.btSettings.UseVisualStyleBackColor = true;
 			this.btSettings.Click += new System.EventHandler(this.btSettings_Click);
 			// 
 			// btLightON
 			// 
-			this.btLightON.Location = new System.Drawing.Point(252, 4);
+			this.btLightON.Location = new System.Drawing.Point(293, 4);
 			this.btLightON.Name = "btLightON";
 			this.btLightON.Size = new System.Drawing.Size(62, 23);
 			this.btLightON.TabIndex = 27;
@@ -132,7 +136,7 @@
 			// 
 			// btLightOFF
 			// 
-			this.btLightOFF.Location = new System.Drawing.Point(252, 30);
+			this.btLightOFF.Location = new System.Drawing.Point(293, 30);
 			this.btLightOFF.Name = "btLightOFF";
 			this.btLightOFF.Size = new System.Drawing.Size(62, 23);
 			this.btLightOFF.TabIndex = 28;
@@ -143,7 +147,7 @@
 			// chkShowRef
 			// 
 			this.chkShowRef.AutoSize = true;
-			this.chkShowRef.Location = new System.Drawing.Point(148, 22);
+			this.chkShowRef.Location = new System.Drawing.Point(189, 22);
 			this.chkShowRef.Name = "chkShowRef";
 			this.chkShowRef.Size = new System.Drawing.Size(102, 17);
 			this.chkShowRef.TabIndex = 29;
@@ -153,7 +157,7 @@
 			// 
 			// btRaLow2
 			// 
-			this.btRaLow2.Location = new System.Drawing.Point(443, 4);
+			this.btRaLow2.Location = new System.Drawing.Point(484, 4);
 			this.btRaLow2.Name = "btRaLow2";
 			this.btRaLow2.Size = new System.Drawing.Size(29, 23);
 			this.btRaLow2.TabIndex = 30;
@@ -163,7 +167,7 @@
 			// 
 			// btDecLow2
 			// 
-			this.btDecLow2.Location = new System.Drawing.Point(443, 30);
+			this.btDecLow2.Location = new System.Drawing.Point(484, 30);
 			this.btDecLow2.Name = "btDecLow2";
 			this.btDecLow2.Size = new System.Drawing.Size(29, 23);
 			this.btDecLow2.TabIndex = 31;
@@ -174,7 +178,7 @@
 			// label1
 			// 
 			this.label1.AutoSize = true;
-			this.label1.Location = new System.Drawing.Point(403, 9);
+			this.label1.Location = new System.Drawing.Point(444, 9);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(34, 13);
 			this.label1.TabIndex = 32;
@@ -183,7 +187,7 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(401, 35);
+			this.label2.Location = new System.Drawing.Point(442, 35);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(36, 13);
 			this.label2.TabIndex = 33;
@@ -191,7 +195,7 @@
 			// 
 			// btDecLow
 			// 
-			this.btDecLow.Location = new System.Drawing.Point(478, 30);
+			this.btDecLow.Location = new System.Drawing.Point(519, 30);
 			this.btDecLow.Name = "btDecLow";
 			this.btDecLow.Size = new System.Drawing.Size(29, 23);
 			this.btDecLow.TabIndex = 35;
@@ -201,7 +205,7 @@
 			// 
 			// btRaLow
 			// 
-			this.btRaLow.Location = new System.Drawing.Point(478, 4);
+			this.btRaLow.Location = new System.Drawing.Point(519, 4);
 			this.btRaLow.Name = "btRaLow";
 			this.btRaLow.Size = new System.Drawing.Size(29, 23);
 			this.btRaLow.TabIndex = 34;
@@ -211,7 +215,7 @@
 			// 
 			// btDecHigh
 			// 
-			this.btDecHigh.Location = new System.Drawing.Point(506, 30);
+			this.btDecHigh.Location = new System.Drawing.Point(547, 30);
 			this.btDecHigh.Name = "btDecHigh";
 			this.btDecHigh.Size = new System.Drawing.Size(29, 23);
 			this.btDecHigh.TabIndex = 37;
@@ -221,7 +225,7 @@
 			// 
 			// btRaHigh
 			// 
-			this.btRaHigh.Location = new System.Drawing.Point(506, 4);
+			this.btRaHigh.Location = new System.Drawing.Point(547, 4);
 			this.btRaHigh.Name = "btRaHigh";
 			this.btRaHigh.Size = new System.Drawing.Size(29, 23);
 			this.btRaHigh.TabIndex = 36;
@@ -231,7 +235,7 @@
 			// 
 			// btDecHigh2
 			// 
-			this.btDecHigh2.Location = new System.Drawing.Point(541, 30);
+			this.btDecHigh2.Location = new System.Drawing.Point(582, 30);
 			this.btDecHigh2.Name = "btDecHigh2";
 			this.btDecHigh2.Size = new System.Drawing.Size(29, 23);
 			this.btDecHigh2.TabIndex = 39;
@@ -241,7 +245,7 @@
 			// 
 			// btRaHigh2
 			// 
-			this.btRaHigh2.Location = new System.Drawing.Point(541, 4);
+			this.btRaHigh2.Location = new System.Drawing.Point(582, 4);
 			this.btRaHigh2.Name = "btRaHigh2";
 			this.btRaHigh2.Size = new System.Drawing.Size(29, 23);
 			this.btRaHigh2.TabIndex = 38;
@@ -251,7 +255,7 @@
 			// 
 			// btConnect
 			// 
-			this.btConnect.Location = new System.Drawing.Point(326, 4);
+			this.btConnect.Location = new System.Drawing.Point(367, 4);
 			this.btConnect.Name = "btConnect";
 			this.btConnect.Size = new System.Drawing.Size(71, 23);
 			this.btConnect.TabIndex = 40;
@@ -262,7 +266,7 @@
 			// btCancel
 			// 
 			this.btCancel.BackColor = System.Drawing.Color.Tomato;
-			this.btCancel.Location = new System.Drawing.Point(443, 4);
+			this.btCancel.Location = new System.Drawing.Point(484, 4);
 			this.btCancel.Name = "btCancel";
 			this.btCancel.Size = new System.Drawing.Size(171, 49);
 			this.btCancel.TabIndex = 41;
@@ -274,7 +278,9 @@
 			// chkUpdateImage
 			// 
 			this.chkUpdateImage.AutoSize = true;
-			this.chkUpdateImage.Location = new System.Drawing.Point(148, 40);
+			this.chkUpdateImage.Checked = true;
+			this.chkUpdateImage.CheckState = System.Windows.Forms.CheckState.Checked;
+			this.chkUpdateImage.Location = new System.Drawing.Point(189, 40);
 			this.chkUpdateImage.Name = "chkUpdateImage";
 			this.chkUpdateImage.Size = new System.Drawing.Size(92, 17);
 			this.chkUpdateImage.TabIndex = 42;
@@ -289,7 +295,7 @@
 			// 
 			// btPark
 			// 
-			this.btPark.Location = new System.Drawing.Point(326, 31);
+			this.btPark.Location = new System.Drawing.Point(367, 31);
 			this.btPark.Name = "btPark";
 			this.btPark.Size = new System.Drawing.Size(71, 23);
 			this.btPark.TabIndex = 43;
@@ -305,7 +311,7 @@
 			// 
 			// btAutoPark
 			// 
-			this.btAutoPark.Location = new System.Drawing.Point(576, 4);
+			this.btAutoPark.Location = new System.Drawing.Point(617, 4);
 			this.btAutoPark.Name = "btAutoPark";
 			this.btAutoPark.Size = new System.Drawing.Size(38, 49);
 			this.btAutoPark.TabIndex = 44;
@@ -313,11 +319,37 @@
 			this.btAutoPark.UseVisualStyleBackColor = true;
 			this.btAutoPark.Click += new System.EventHandler(this.btAutoPark_Click);
 			// 
+			// tbLum
+			// 
+			this.tbLum.LargeChange = 10;
+			this.tbLum.Location = new System.Drawing.Point(105, 4);
+			this.tbLum.Maximum = 100;
+			this.tbLum.Name = "tbLum";
+			this.tbLum.Orientation = System.Windows.Forms.Orientation.Vertical;
+			this.tbLum.Size = new System.Drawing.Size(45, 53);
+			this.tbLum.TabIndex = 45;
+			this.tbLum.TickFrequency = 25;
+			this.tbLum.Value = 50;
+			this.tbLum.ValueChanged += new System.EventHandler(this.tbLum_ValueChanged);
+			// 
+			// tbContrast
+			// 
+			this.tbContrast.LargeChange = 10;
+			this.tbContrast.Location = new System.Drawing.Point(148, 4);
+			this.tbContrast.Maximum = 100;
+			this.tbContrast.Name = "tbContrast";
+			this.tbContrast.Orientation = System.Windows.Forms.Orientation.Vertical;
+			this.tbContrast.Size = new System.Drawing.Size(45, 53);
+			this.tbContrast.TabIndex = 46;
+			this.tbContrast.TickFrequency = 25;
+			this.tbContrast.Value = 50;
+			this.tbContrast.ValueChanged += new System.EventHandler(this.tbContrast_ValueChanged);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(625, 521);
+			this.ClientSize = new System.Drawing.Size(696, 521);
 			this.Controls.Add(this.btAutoPark);
 			this.Controls.Add(this.btPark);
 			this.Controls.Add(this.chkUpdateImage);
@@ -341,6 +373,8 @@
 			this.Controls.Add(this.picCurrent);
 			this.Controls.Add(this.picReference);
 			this.Controls.Add(this.btCancel);
+			this.Controls.Add(this.tbLum);
+			this.Controls.Add(this.tbContrast);
 			this.Name = "MainForm";
 			this.Text = "ChekMountPosition";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
@@ -348,6 +382,8 @@
 			this.Resize += new System.EventHandler(this.MainForm_Resize);
 			((System.ComponentModel.ISupportInitialize)(this.picReference)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.picCurrent)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.tbLum)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.tbContrast)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -380,5 +416,7 @@
 		private System.Windows.Forms.Button btPark;
 		private System.Windows.Forms.Timer timerMountStat;
 		private System.Windows.Forms.Button btAutoPark;
+		private System.Windows.Forms.TrackBar tbLum;
+		private System.Windows.Forms.TrackBar tbContrast;
 	}
 }

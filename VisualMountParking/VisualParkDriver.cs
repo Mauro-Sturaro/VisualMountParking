@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.Diagnostics;
 
 namespace VisualMountParking
 {
@@ -65,7 +67,12 @@ namespace VisualMountParking
 				_Telescope.Unpark();
 			}
 			_Telescope.Tracking = false; // valid only when unparked
-			await Task.Run(() => _Telescope.Park());
+			await Task.Run(() =>
+			{
+				Debug.WriteLine($"[{DateTime.Now}]Start Park command");
+				_Telescope.Park();
+				Debug.WriteLine($"[{DateTime.Now}]End Park command");
+			});
 
 		}
 		public void UnParkTelescope()
@@ -110,6 +117,12 @@ namespace VisualMountParking
 		}
 
 		public Action<string> Logger { get; set; }
+
+		/// <summary>
+		/// Regola la luminosità, 50 = unchange, valori da 0 a 100
+		/// </summary>
+		public float Brighness { get; set; } = 50;
+		public float Contrast { get; set; } = 50;
 
 		private void LogWriteLine(string message)
 		{
@@ -213,9 +226,15 @@ namespace VisualMountParking
 		public async Task<Image> LoadNewImage()
 		{
 			var image = await _WebUtils.LoadImageAsync(_Config.SourceType, _Config.Source);
-			CurrentImage = new Bitmap(image);
-			_ImageUpdated?.Invoke(this, EventArgs.Empty);
+			if (Brighness != 50 || Contrast != 50)
+				image = AdjustBrightness(image, Brighness / 50, Contrast / 50); /* range 0-2 */
+
 			_PatternVerifier.NewImage = new Bitmap(image);
+			CurrentImage = new Bitmap(image);
+			////-- per debug
+			//CurrentImage = _PatternVerifier.GetDetectionImage();
+			////
+			_ImageUpdated?.Invoke(this, EventArgs.Empty);
 			return image;
 		}
 
@@ -230,10 +249,21 @@ namespace VisualMountParking
 			var apRA = _Config.AutoParkAR;
 			var apDec = _Config.AutoParkDec;
 			//
-
-			var success = await AutoPark(TelescopeAxes.axisPrimary, _Config.MoveRaRate, _Config.MoveRaTime, apRA.ZoneId, apRA.Direction, cancellationToken);
-			if (success)
+			bool success;
+			int retry = 3;
+			do
+			{
+				success = await AutoPark(TelescopeAxes.axisPrimary, _Config.MoveRaRate, _Config.MoveRaTime, apRA.ZoneId, apRA.Direction, cancellationToken);
+				if (!success)
+					await Task.Delay(1000);
+			} while (!success && retry-- > 0);
+			retry = 3;
+			do
+			{
 				success = await AutoPark(TelescopeAxes.axisSecondary, _Config.MoveDecRate, _Config.MoveDecTime, apDec.ZoneId, apDec.Direction, cancellationToken);
+				if (!success)
+					await Task.Delay(1000);
+			} while (!success && retry-- > 0);
 			return success;
 		}
 
@@ -247,9 +277,66 @@ namespace VisualMountParking
 				return _Config.Templates;
 		}
 
-		internal IList<ZoneMatch> GetZoneMatch()
+		internal IList<ZoneMatch> GetZoneMatch(bool all = true)
 		{
-			return _PatternVerifier.ZoneMatchList;
+			var matchList = _PatternVerifier.ZoneMatchList;
+			if (all)
+				foreach (var zone in GetReferenceZone())
+				{
+					if (!matchList.Exists((m) => m.ZoneId == zone.Id))
+					{
+						var z = new ZoneMatch { ZoneId = zone.Id, Source = zone };
+						matchList.Add(z);
+					}
+				}
+			return matchList;
+		}
+
+
+
+		private Bitmap AdjustBrightness(Image image, float brightness, float contrast)
+		{
+
+			if (image == null)
+				throw new ArgumentNullException("image");
+			if (brightness < 0 || brightness > 2)
+				throw new ArgumentOutOfRangeException("brightness must be between 0 and 2");
+			//------------------
+
+			float b = brightness - 1;
+			float c = contrast;
+			float t = (1.0f - c) / 2.0f;
+
+			ColorMatrix cm = new ColorMatrix(new float[][]
+				{
+					new float[] {c, 0, 0, 0, 0},
+					new float[] {0, c, 0, 0, 0},
+					new float[] {0, 0, c, 0, 0},
+					new float[] {0, 0, 0, 1, 0},
+					new float[] {t+b, t+b, t+b, 0, 1},
+				});
+			//------------------
+			ImageAttributes attributes = new ImageAttributes();
+			attributes.SetColorMatrix(cm);
+
+			// Draw the image onto the new bitmap while applying the new ColorMatrix.
+			Point[] points =
+			{
+				new Point(0, 0),
+				new Point(image.Width, 0),
+				new Point(0, image.Height),
+			};
+			Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
+
+			// Make the result bitmap.
+			Bitmap bm = new Bitmap(image.Width, image.Height);
+			using (Graphics gr = Graphics.FromImage(bm))
+			{
+				gr.DrawImage(image, points, rect, GraphicsUnit.Pixel, attributes);
+			}
+
+			// Return the result.
+			return bm;
 		}
 	}
 }

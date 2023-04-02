@@ -42,21 +42,25 @@ namespace VisualMountParking
 			}
 		}
 
+		public Bitmap GetDetectionImage()
+		{
+			var decImage = _ArucoDetector.ShowMarkers(NewImage, true);
+			return decImage;
+		}
+
 		public void SearchMatch()
 		{
 			bool useAccord = false;
 			List<Zone> finds;
 			if (useArucoMarkers)
 				finds = SearchWithAruco(NewImage);
-			//else if (useAccord)
-			//	finds = SearchMatchWithAccord(NewImage);
 			else
 				finds = SearchMatchWithOpenCV(NewImage);
 
 			var matchList = new List<ZoneMatch>();
 			foreach (var src in referenceTemplates)
 			{
-				var target = finds.Find((z)=>z.Id== src.Id);
+				var target = finds.Find((z) => z.Id == src.Id);
 				if (target != null)
 				{
 					var zm = new ZoneMatch { ZoneId = src.Id, Source = src, Target = target };
@@ -79,8 +83,8 @@ namespace VisualMountParking
 				Mat result = new Mat();
 				Emgu.CV.CvInvoke.MatchTemplate(arImage, arTemplate, result, method);
 
-				var bmresult = result.ToBitmap();
-				bmresult.Save(@"c:\temp\result.png");
+				//var bmresult = result.ToBitmap();
+				//bmresult.Save(@"c:\temp\result.png");
 
 				double min = 0, max = 0;
 				Point minLoc = Point.Empty, maxLoc = Point.Empty;
@@ -94,24 +98,7 @@ namespace VisualMountParking
 			}
 			return matchFound;
 		}
-		private void SearchWithAruco()
-		{
-			if (_ArucoDetector == null)
-			{
-				_ArucoDetector = new ArucoDetector();
-				_ArucoDetector.Initialize();
-			}
-			var m = _ArucoDetector.FindMarkers(NewImage);
 
-			var newZone = new List<ZoneMatch>();
-			foreach (var marker in m)
-			{
-				var z = new Zone { Id = marker.Id, X = (int)marker.Position.X, Y = (int)marker.Position.Y, Width = 10, Height = 10 };
-				var zm = new ZoneMatch { ZoneId = z.Id, Source = z, Target = z };
-				newZone.Add(zm);
-			}
-			ZoneMatchList = newZone;
-		}
 		private List<Zone> SearchWithAruco(Bitmap image)
 		{
 
@@ -125,14 +112,11 @@ namespace VisualMountParking
 			var result = new List<Zone>();
 			foreach (var marker in m)
 			{
-				var z = new Zone { Id = marker.Id, X = (int)marker.Position.X, Y = (int)marker.Position.Y, Width = 10, Height = 10 };
+				var z = new Zone { Id = marker.Id, X = (int)marker.Position.X, Y = (int)marker.Position.Y, Width = 8, Height = 8 };
 				result.Add(z);
 			}
 			return result;
 		}
-
-
-
 
 		private Zone EstraiDintorni(int width, int height, Zone template)
 		{

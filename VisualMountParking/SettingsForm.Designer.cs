@@ -63,17 +63,17 @@
 			this.tabPageCommands = new System.Windows.Forms.TabPage();
 			this.tabPageTelescope = new System.Windows.Forms.TabPage();
 			this.tabPageZone = new System.Windows.Forms.TabPage();
+			this.cmbMarkerDecDirection = new System.Windows.Forms.ComboBox();
+			this.cmbMarkerArDirection = new System.Windows.Forms.ComboBox();
+			this.label11 = new System.Windows.Forms.Label();
+			this.numMarkerIdDec = new System.Windows.Forms.NumericUpDown();
+			this.numMarkerIdAr = new System.Windows.Forms.NumericUpDown();
+			this.label2 = new System.Windows.Forms.Label();
+			this.chkUseAruco = new System.Windows.Forms.CheckBox();
+			this.tabPage1 = new System.Windows.Forms.TabPage();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.btApply = new System.Windows.Forms.Button();
 			this.btCancel = new System.Windows.Forms.Button();
-			this.tabPage1 = new System.Windows.Forms.TabPage();
-			this.chkUseAruco = new System.Windows.Forms.CheckBox();
-			this.label2 = new System.Windows.Forms.Label();
-			this.numMarkerIdAr = new System.Windows.Forms.NumericUpDown();
-			this.numMarkerIdDec = new System.Windows.Forms.NumericUpDown();
-			this.label11 = new System.Windows.Forms.Label();
-			this.cmbMarkerArDirection = new System.Windows.Forms.ComboBox();
-			this.cmbMarkerDecDirection = new System.Windows.Forms.ComboBox();
 			this.groupBox1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.numFastSpeed)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numFastTime)).BeginInit();
@@ -87,9 +87,9 @@
 			this.tabPageCommands.SuspendLayout();
 			this.tabPageTelescope.SuspendLayout();
 			this.tabPageZone.SuspendLayout();
-			this.panel1.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.numMarkerIdAr)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.numMarkerIdDec)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.numMarkerIdAr)).BeginInit();
+			this.panel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// btSave
@@ -462,6 +462,7 @@
 			// 
 			this.txtSource.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+			this.txtSource.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
 			this.txtSource.Location = new System.Drawing.Point(82, 34);
 			this.txtSource.Name = "txtSource";
 			this.txtSource.Size = new System.Drawing.Size(332, 20);
@@ -495,7 +496,6 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.picPreview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.picPreview.Image = null;
 			this.picPreview.Location = new System.Drawing.Point(6, 69);
 			this.picPreview.Name = "picPreview";
 			this.picPreview.Size = new System.Drawing.Size(335, 300);
@@ -567,6 +567,84 @@
 			this.tabPageZone.TabIndex = 3;
 			this.tabPageZone.Text = "Markers";
 			// 
+			// cmbMarkerDecDirection
+			// 
+			this.cmbMarkerDecDirection.FormattingEnabled = true;
+			this.cmbMarkerDecDirection.Items.AddRange(new object[] {
+            "X",
+            "Y"});
+			this.cmbMarkerDecDirection.Location = new System.Drawing.Point(162, 119);
+			this.cmbMarkerDecDirection.Name = "cmbMarkerDecDirection";
+			this.cmbMarkerDecDirection.Size = new System.Drawing.Size(46, 21);
+			this.cmbMarkerDecDirection.TabIndex = 32;
+			this.cmbMarkerDecDirection.Text = "X";
+			// 
+			// cmbMarkerArDirection
+			// 
+			this.cmbMarkerArDirection.FormattingEnabled = true;
+			this.cmbMarkerArDirection.Items.AddRange(new object[] {
+            "X",
+            "Y"});
+			this.cmbMarkerArDirection.Location = new System.Drawing.Point(162, 93);
+			this.cmbMarkerArDirection.Name = "cmbMarkerArDirection";
+			this.cmbMarkerArDirection.Size = new System.Drawing.Size(46, 21);
+			this.cmbMarkerArDirection.TabIndex = 31;
+			this.cmbMarkerArDirection.Text = "X";
+			// 
+			// label11
+			// 
+			this.label11.AutoSize = true;
+			this.label11.Location = new System.Drawing.Point(25, 122);
+			this.label11.Name = "label11";
+			this.label11.Size = new System.Drawing.Size(30, 13);
+			this.label11.TabIndex = 30;
+			this.label11.Text = "Dec.";
+			this.label11.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
+			// numMarkerIdDec
+			// 
+			this.numMarkerIdDec.Location = new System.Drawing.Point(80, 120);
+			this.numMarkerIdDec.Name = "numMarkerIdDec";
+			this.numMarkerIdDec.Size = new System.Drawing.Size(59, 20);
+			this.numMarkerIdDec.TabIndex = 29;
+			// 
+			// numMarkerIdAr
+			// 
+			this.numMarkerIdAr.Location = new System.Drawing.Point(80, 94);
+			this.numMarkerIdAr.Name = "numMarkerIdAr";
+			this.numMarkerIdAr.Size = new System.Drawing.Size(59, 20);
+			this.numMarkerIdAr.TabIndex = 28;
+			// 
+			// label2
+			// 
+			this.label2.AutoSize = true;
+			this.label2.Location = new System.Drawing.Point(25, 96);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(31, 13);
+			this.label2.TabIndex = 27;
+			this.label2.Text = "A.R.:";
+			this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			// 
+			// chkUseAruco
+			// 
+			this.chkUseAruco.AutoSize = true;
+			this.chkUseAruco.Location = new System.Drawing.Point(260, 23);
+			this.chkUseAruco.Name = "chkUseAruco";
+			this.chkUseAruco.Size = new System.Drawing.Size(116, 17);
+			this.chkUseAruco.TabIndex = 26;
+			this.chkUseAruco.Text = "Use Aruco markers";
+			this.chkUseAruco.UseVisualStyleBackColor = true;
+			// 
+			// tabPage1
+			// 
+			this.tabPage1.Location = new System.Drawing.Point(4, 22);
+			this.tabPage1.Name = "tabPage1";
+			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+			this.tabPage1.Size = new System.Drawing.Size(452, 379);
+			this.tabPage1.TabIndex = 4;
+			this.tabPage1.Text = "tabPage1";
+			this.tabPage1.UseVisualStyleBackColor = true;
+			// 
 			// panel1
 			// 
 			this.panel1.Controls.Add(this.btApply);
@@ -601,84 +679,6 @@
 			this.btCancel.Text = "Cancel";
 			this.btCancel.UseVisualStyleBackColor = true;
 			// 
-			// tabPage1
-			// 
-			this.tabPage1.Location = new System.Drawing.Point(4, 22);
-			this.tabPage1.Name = "tabPage1";
-			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage1.Size = new System.Drawing.Size(452, 379);
-			this.tabPage1.TabIndex = 4;
-			this.tabPage1.Text = "tabPage1";
-			this.tabPage1.UseVisualStyleBackColor = true;
-			// 
-			// chkUseAruco
-			// 
-			this.chkUseAruco.AutoSize = true;
-			this.chkUseAruco.Location = new System.Drawing.Point(260, 23);
-			this.chkUseAruco.Name = "chkUseAruco";
-			this.chkUseAruco.Size = new System.Drawing.Size(116, 17);
-			this.chkUseAruco.TabIndex = 26;
-			this.chkUseAruco.Text = "Use Aruco markers";
-			this.chkUseAruco.UseVisualStyleBackColor = true;
-			// 
-			// label2
-			// 
-			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(25, 96);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(31, 13);
-			this.label2.TabIndex = 27;
-			this.label2.Text = "A.R.:";
-			this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
-			// 
-			// numMarkerIdAr
-			// 
-			this.numMarkerIdAr.Location = new System.Drawing.Point(80, 94);
-			this.numMarkerIdAr.Name = "numMarkerIdAr";
-			this.numMarkerIdAr.Size = new System.Drawing.Size(59, 20);
-			this.numMarkerIdAr.TabIndex = 28;
-			// 
-			// numMarkerIdDec
-			// 
-			this.numMarkerIdDec.Location = new System.Drawing.Point(80, 120);
-			this.numMarkerIdDec.Name = "numMarkerIdDec";
-			this.numMarkerIdDec.Size = new System.Drawing.Size(59, 20);
-			this.numMarkerIdDec.TabIndex = 29;
-			// 
-			// label11
-			// 
-			this.label11.AutoSize = true;
-			this.label11.Location = new System.Drawing.Point(25, 122);
-			this.label11.Name = "label11";
-			this.label11.Size = new System.Drawing.Size(30, 13);
-			this.label11.TabIndex = 30;
-			this.label11.Text = "Dec.";
-			this.label11.TextAlign = System.Drawing.ContentAlignment.TopRight;
-			// 
-			// cmbMarkerArDirection
-			// 
-			this.cmbMarkerArDirection.FormattingEnabled = true;
-			this.cmbMarkerArDirection.Items.AddRange(new object[] {
-            "X",
-            "Y"});
-			this.cmbMarkerArDirection.Location = new System.Drawing.Point(162, 93);
-			this.cmbMarkerArDirection.Name = "cmbMarkerArDirection";
-			this.cmbMarkerArDirection.Size = new System.Drawing.Size(46, 21);
-			this.cmbMarkerArDirection.TabIndex = 31;
-			this.cmbMarkerArDirection.Text = "X";
-			// 
-			// cmbMarkerDecDirection
-			// 
-			this.cmbMarkerDecDirection.FormattingEnabled = true;
-			this.cmbMarkerDecDirection.Items.AddRange(new object[] {
-            "X",
-            "Y"});
-			this.cmbMarkerDecDirection.Location = new System.Drawing.Point(162, 119);
-			this.cmbMarkerDecDirection.Name = "cmbMarkerDecDirection";
-			this.cmbMarkerDecDirection.Size = new System.Drawing.Size(46, 21);
-			this.cmbMarkerDecDirection.TabIndex = 32;
-			this.cmbMarkerDecDirection.Text = "X";
-			// 
 			// SettingsForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -711,9 +711,9 @@
 			this.tabPageTelescope.PerformLayout();
 			this.tabPageZone.ResumeLayout(false);
 			this.tabPageZone.PerformLayout();
-			this.panel1.ResumeLayout(false);
-			((System.ComponentModel.ISupportInitialize)(this.numMarkerIdAr)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.numMarkerIdDec)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.numMarkerIdAr)).EndInit();
+			this.panel1.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}

@@ -12,7 +12,7 @@ namespace VisualMountParking
 	{
 		DetectorParameters ArucoParameters;
 
-		public static Dictionary ArucoDict = new Dictionary(Dictionary.PredefinedDictionaryName.Dict4X4_50);
+		private static Dictionary ArucoDict = new Dictionary(Dictionary.PredefinedDictionaryName.Dict4X4_50);
 		// bits x bits (per marker) _ <number of markers in dictionary>
 
 		//Mat cameraMatrix;
@@ -58,16 +58,15 @@ namespace VisualMountParking
 		}
 
 
-
-
 		public Bitmap ShowMarkers(Bitmap image, bool showDetected = false)
 		{
+			image = ConvertTo24bpp(image);
 			var frame = image.ToMat();
 			AnalyzeFrame(frame, showDetected);
 			var res = frame.ToBitmap();
 			return res;
 		}
-		public void AnalyzeFrame(Mat frame, bool showDetected = false)
+		private void AnalyzeFrame(Mat frame, bool showDetected = false)
 		{
 			if (!frame.IsEmpty)
 			{
@@ -78,7 +77,7 @@ namespace VisualMountParking
 				{
 
 					ArucoInvoke.DetectMarkers(frame, ArucoDict, corners, ids, ArucoParameters, rejected);
-					#endregion
+					#endregion					
 
 					if (showDetected)
 					{
@@ -89,35 +88,8 @@ namespace VisualMountParking
 					// If we detected at least one marker
 					if (ids.Size > 0)
 					{
-						#region Draw detected markers
 						ArucoInvoke.DrawDetectedMarkers(frame, corners, ids, new MCvScalar(255, 0, 255));
-						#endregion
-
-						//#region Estimate pose for each marker using camera calibration matrix and distortion coefficents
-						//Mat rvecs = new Mat(); // rotation vector
-						//Mat tvecs = new Mat(); // translation vector
-						//ArucoInvoke.EstimatePoseSingleMarkers(corners, markersLength, cameraMatrix, distortionMatrix, rvecs, tvecs);
-						//#endregion
-
-						//#region Draw 3D orthogonal axis on markers using estimated pose
-						//for (int i = 0; i < ids.Size; i++)
-						//{
-						//	using (Mat rvecMat = rvecs.Row(i))
-						//	using (Mat tvecMat = tvecs.Row(i))
-						//	using (VectorOfDouble rvec = new VectorOfDouble())
-						//	using (VectorOfDouble tvec = new VectorOfDouble())
-						//	{
-						//		double[] values = new double[3];
-						//		rvecMat.CopyTo(values);
-						//		rvec.Push(values);
-						//		tvecMat.CopyTo(values);
-						//		tvec.Push(values);
-
-						//	}
-						//}
-						//#endregion
 					}
-
 				}
 			}
 		}

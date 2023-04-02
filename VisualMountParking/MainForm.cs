@@ -3,6 +3,7 @@ using ASCOM.DriverAccess;
 using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Numerics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +28,7 @@ namespace VisualMountParking
 			this.Icon = Resources._2bs_logo;
 		}
 
-		private Config config; //{ get { return _vpDriver.Config; } set { _vpDriver.Config = value; } }
+		private Config config; 
 
 		public bool ShowRefImage
 		{
@@ -50,12 +51,13 @@ namespace VisualMountParking
 			btCancel.BringToFront();
 
 			picReference.Image = config.ReferenceImage;
-			_vpDriver.ImageUpdated += _vpDriver_ImageUpdated;
-			//await _vpDriver.LoadNewImage();
+			_vpDriver.ImageUpdated += vpDriver_ImageUpdated;
+
 			await _vpDriver.UpdateImageAndPosition();
+			timerImage.Enabled = chkUpdateImage.Checked;
 		}
 
-		private void _vpDriver_ImageUpdated(object sender, EventArgs e)
+		private void vpDriver_ImageUpdated(object sender, EventArgs e)
 		{
 			if (!ShowingOriginal)
 				picCurrent.Image = _vpDriver.CurrentImage;
@@ -137,28 +139,6 @@ namespace VisualMountParking
 			bottomRight = new Point(Math.Max(point1.X, point2.X), Math.Max(point1.Y, point2.Y));
 		}
 
-		private void picReference_Paint(object sender, PaintEventArgs e)
-		{
-			if (picReference.Image == null)
-				return;
-			GetStretch((PictureBox)sender, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
-			var g = e.Graphics;
-			foreach (var tp in _vpDriver.GetReferenceZone())
-			{
-				int x = (int)(tp.X * stretchX) + shiftX;
-				int y = (int)(tp.Y * stretchY) + shiftY;
-				g.DrawRectangle(new Pen(Color.Blue, 1), x, y, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
-				var msg = $"id={tp.Id}";
-				g.DrawString(msg, drawFont, drawBrush, x + 2, y + 2);
-			}
-			if (_MouseDragging)
-			{
-				SortPoint(_SelectionFirstPoint, _SelectionLastPoint, out var startPoint, out var endPoint);
-				g.DrawRectangle(new Pen(Color.Coral, 1), startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y);
-
-			}
-		}
-
 		private void GetStretch(PictureBox pb, out double stretchX, out double stretchY, out int shiftX, out int shiftY)
 		{
 
@@ -198,11 +178,18 @@ namespace VisualMountParking
 
 		}
 
-		static Pen greenPen = new Pen(Color.Green, 1);
-		static Pen bluePen = new Pen(Color.Blue, 1);
-		static Pen redPen = new Pen(Color.DarkRed, 1);
+
+		static Pen penOk1 = new Pen(Color.DarkGreen, 3);
+		static Pen penOk2 = new Pen(Color.LightGreen, 1);
+		static Pen penRef1 = new Pen(Color.DarkBlue, 3);
+		static Pen penRef2 = new Pen(Color.LightBlue, 1);
+		static Pen penBad1 = new Pen(Color.DarkRed, 3);
+		static Pen penBad2 = new Pen(Color.LightPink, 1);
+
 		static Font drawFont = new Font("Arial", 10);
 		static SolidBrush drawBrush = new SolidBrush(Color.Gold);
+		static Brush txtBackground = new SolidBrush(Color.FromArgb(100, 0, 0, 0));
+
 
 		private void picCurrent_Paint(object sender, PaintEventArgs e)
 		{
@@ -215,34 +202,106 @@ namespace VisualMountParking
 				var sp = zoneMatch.Source;
 				var tp = zoneMatch.Target;
 
-				var x = (int)(sp?.X * stretchX) + shiftX;
-				var y = (int)(sp?.Y * stretchY) + shiftY;
+				var x = (int)((sp == null ? tp.X : sp.X) * stretchX) + shiftX;
+				var y = (int)((sp == null ? tp.Y : sp.Y) * stretchY) + shiftY;
 
 				if (sp != null && tp != null && sp.X == tp.X && sp.Y == tp.Y && sp.Width == tp.Width && sp.Height == tp.Height)
 				{
-					g.DrawRectangle(greenPen, x, y, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
+					// Green cross
+					DrawMarker(g, penOk1, x, y);
+					DrawMarker(g, penOk2, x, y);
+					if (ShowingOriginal)
+					{
+						var msg = $"id={tp.Id}";
+						DrawStringWithBackground(g, x, y, msg);
+					}
 				}
 				else
 				{
 					if (sp != null)
 					{
-						g.DrawRectangle(bluePen, x, y, (int)(sp.Width * stretchX), (int)(sp.Height * stretchY));
+						if (ShowingOriginal || tp != null)
+						{
+							// Blue cross
+							DrawMarker(g, penRef1, x, y);
+							DrawMarker(g, penRef2, x, y);
+
+							if (ShowingOriginal)
+							{
+								var msg = $"id={sp.Id}";
+								DrawStringWithBackground(g, x, y, msg);
+							}
+						}
 					}
 					if (tp != null)
 					{
+						// Red Cross
 						var x1 = (int)(tp.X * stretchX) + shiftX;
 						var y1 = (int)(tp.Y * stretchY) + shiftY;
-						g.DrawRectangle(redPen, x1, y1, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
+
+						DrawMarker2(g, penBad1, x1, y1);
+						DrawMarker2(g, penBad2, x1, y1);
 						if (sp != null)
 						{
-							var msg = $"{tp.X - sp.X},{tp.Y - sp.Y}";
-							g.DrawString(msg, drawFont, drawBrush, x1 + 2, y1 + 2);
+							if (!ShowingOriginal)
+							{
+								var msg = $"{tp.X - sp.X},{tp.Y - sp.Y}";
+								DrawStringWithBackground(g, x1, y1, msg);
+							}
 						}
+						g.DrawLine(penBad2, x1, y1, x, y);
 					}
 				}
 			}
 		}
 
+		private void picReference_Paint(object sender, PaintEventArgs e)
+		{
+			if (picReference.Image == null)
+				return;
+			GetStretch((PictureBox)sender, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
+			var g = e.Graphics;
+			foreach (var tp in _vpDriver.GetReferenceZone())
+			{
+				int x = (int)(tp.X * stretchX) + shiftX;
+				int y = (int)(tp.Y * stretchY) + shiftY;
+				//g.DrawRectangle(bluePen, x, y, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
+				DrawMarker(g, penRef1, x, y);
+				DrawMarker(g, penRef2, x, y);
+
+				var msg = $"id={tp.Id}";
+				DrawStringWithBackground(g, x + 2, y + 2, msg);
+			}
+			if (_MouseDragging)
+			{
+				SortPoint(_SelectionFirstPoint, _SelectionLastPoint, out var startPoint, out var endPoint);
+				g.DrawRectangle(new Pen(Color.Coral, 1), startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y);
+
+			}
+		}
+
+		private static void DrawMarker(Graphics g, Pen pen, int x, int y)
+		{
+			var delta = 5;
+			g.DrawLine(pen, x - delta, y, x + delta, y);
+			g.DrawLine(pen, x, y - delta, x, y + delta);
+		}
+		private static void DrawMarker2(Graphics g, Pen pen, int x, int y)
+		{
+			var delta = 4;
+			g.DrawLine(pen, x - delta, y - delta, x + delta, y + delta);
+			g.DrawLine(pen, x + delta, y - delta, x - delta, y + delta);
+		}
+
+
+		private static void DrawStringWithBackground(Graphics g, int x, int y, string msg)
+		{
+			var txtSize = g.MeasureString(msg, drawFont);
+			var txtX = x + 6;
+			var txtY = y + 6;
+			g.FillRectangle(txtBackground, txtX, txtY, txtSize.Width, txtSize.Height);
+			g.DrawString(msg, drawFont, drawBrush, txtX, txtY);
+		}
 		private void MainForm_Resize(object sender, EventArgs e)
 		{
 			var dX = picCurrent.Left;
@@ -518,18 +577,16 @@ namespace VisualMountParking
 		private async void btAutoPark_Click(object sender, EventArgs e)
 		{
 			// ensure log window is open
-			if (log != null && !log.Visible)
+			if (log != null)
 			{
 				log.Dispose();
 				log = null;
 			}
-			if (log == null)
-			{
-				log = new LogForm();
-				log.Show();
-				log.Left = this.Right;
-				log.Top = this.Top;
-			}
+
+			log = new LogForm();
+			log.Show();
+			log.Left = this.Right;
+			log.Top = this.Top;
 
 			btAutoPark.Enabled = false;
 			_CancellationTokenSource = new CancellationTokenSource();
@@ -552,6 +609,17 @@ namespace VisualMountParking
 
 		LogForm log;
 
+		private async void tbLum_ValueChanged(object sender, EventArgs e)
+		{
+			_vpDriver.Brighness = tbLum.Value;
+			await _vpDriver.UpdateImageAndPosition();
+		}
+
+		private async void tbContrast_ValueChanged(object sender, EventArgs e)
+		{
+			_vpDriver.Contrast = tbContrast.Value;
+			await _vpDriver.UpdateImageAndPosition();
+		}
 	}
 
 
