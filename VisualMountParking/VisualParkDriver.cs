@@ -13,9 +13,9 @@ namespace VisualMountParking
 	public class VisualParkDriver
 	{
 		Telescope _Telescope;
-		PatternVerifier _PatternVerifier = new PatternVerifier();
+		readonly PatternVerifier _PatternVerifier = new PatternVerifier();
 		Config _Config;
-		WebUtils _WebUtils = new WebUtils();
+		readonly WebUtils _WebUtils = new WebUtils();
 
 		public Bitmap CurrentImage { get; private set; }
 

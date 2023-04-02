@@ -19,8 +19,8 @@ namespace VisualMountParking
 		bool _MouseDragging = false;
 		Point _SelectionFirstPoint;
 		Point _SelectionLastPoint;
-		WebUtils _WebUtils = new WebUtils();
-		VisualParkDriver _vpDriver = new VisualParkDriver();
+		readonly WebUtils _WebUtils = new WebUtils();
+		readonly VisualParkDriver _vpDriver = new VisualParkDriver();
 
 		public MainForm()
 		{
@@ -179,16 +179,16 @@ namespace VisualMountParking
 		}
 
 
-		static Pen penOk1 = new Pen(Color.DarkGreen, 3);
-		static Pen penOk2 = new Pen(Color.LightGreen, 1);
-		static Pen penRef1 = new Pen(Color.DarkBlue, 3);
-		static Pen penRef2 = new Pen(Color.LightBlue, 1);
-		static Pen penBad1 = new Pen(Color.DarkRed, 3);
-		static Pen penBad2 = new Pen(Color.LightPink, 1);
+		static readonly Pen penOk1 = new Pen(Color.DarkGreen, 3);
+		static readonly Pen penOk2 = new Pen(Color.LightGreen, 1);
+		static readonly Pen penRef1 = new Pen(Color.DarkBlue, 3);
+		static readonly	Pen penRef2 = new Pen(Color.LightBlue, 1);
+		static readonly Pen penBad1 = new Pen(Color.DarkRed, 3);
+		static readonly	Pen penBad2 = new Pen(Color.LightPink, 1);
 
-		static Font drawFont = new Font("Arial", 10);
-		static SolidBrush drawBrush = new SolidBrush(Color.Gold);
-		static Brush txtBackground = new SolidBrush(Color.FromArgb(100, 0, 0, 0));
+		static readonly Font drawFont = new Font("Arial", 10);
+		static readonly SolidBrush drawBrush = new SolidBrush(Color.Gold);
+		static readonly Brush txtBackground = new SolidBrush(Color.FromArgb(100, 0, 0, 0));
 
 
 		private void picCurrent_Paint(object sender, PaintEventArgs e)

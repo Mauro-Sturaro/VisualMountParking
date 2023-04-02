@@ -50,7 +50,6 @@ namespace VisualMountParking
 
 		public void SearchMatch()
 		{
-			bool useAccord = false;
 			List<Zone> finds;
 			if (useArucoMarkers)
 				finds = SearchWithAruco(NewImage);
@@ -82,9 +81,6 @@ namespace VisualMountParking
 				var method = Emgu.CV.CvEnum.TemplateMatchingType.SqdiffNormed;
 				Mat result = new Mat();
 				Emgu.CV.CvInvoke.MatchTemplate(arImage, arTemplate, result, method);
-
-				//var bmresult = result.ToBitmap();
-				//bmresult.Save(@"c:\temp\result.png");
 
 				double min = 0, max = 0;
 				Point minLoc = Point.Empty, maxLoc = Point.Empty;
@@ -118,22 +114,6 @@ namespace VisualMountParking
 			return result;
 		}
 
-		private Zone EstraiDintorni(int width, int height, Zone template)
-		{
-			var newWidth = Math.Min(template.Width * 3, width);
-			var newHeight = Math.Min(template.Height * 3, height);
-			var cX = template.X + template.Width / 2;
-			var cY = template.Y + template.Height / 2;
-			var newX = cX - newWidth / 2;
-			var newY = cY - newHeight / 2;
-			if (newX < 0) newX = 0;
-			if (newX + newWidth > width) newX = width - newWidth;
-			if (newY < 0) newY = 0;
-			if (newY + newHeight > height) newY = height - newHeight;
-
-			return new Zone { X = newX, Y = newY, Width = newWidth, Height = newHeight };
-		}
-
 		private Bitmap ExtractBitmap(Bitmap image, Zone zone)
 		{
 			// Clone a portion of the Bitmap object.
@@ -142,74 +122,6 @@ namespace VisualMountParking
 
 			return cloneBitmap;
 		}
-
-		/*-----------------------------------------------------------------------
-			Questo richiede:
-			- Accord.Video.DirectShow v3.8.0
-			- Accord.Extensions.Vision v3.0.1
-			- Accord.Controls.Vision v3.8.0
-		//---------------------------------------------------------------------- * /
-		public List<Zone> SearchMatchWithAccord(Bitmap image)
-		{
-			var matchFound = new List<Zone>();
-			foreach (var zone in referenceTemplates)
-			{
-				var reducedZone = EstraiDintorni(referenceImage.Width, referenceImage.Height, zone);
-				Bitmap template = ExtractBitmap(referenceImage, zone);
-				Bitmap reducedImage = ExtractBitmap(image, reducedZone);
-				var target = FindTemplate(reducedImage, template);
-				if (!target.IsEmpty())
-				{
-					target.X += reducedZone.X;
-					target.Y += reducedZone.Y;
-					matchFound.Add(target);
-				}
-			}
-			return matchFound;
-		}
-
-		private Bitmap TransformImage(System.Drawing.Image image, double scale)
-		{
-			Bitmap bimg;
-			if (image is Bitmap)
-				bimg = (Bitmap)image;
-			else
-				bimg = new Bitmap(image);
-
-			var gg = Grayscale.CommonAlgorithms.RMY;
-			Bitmap gray = gg.Apply(bimg);
-
-			// rescale image
-			var filter = new ResizeBilinear((int)(gray.Width * scale), (int)(gray.Height * scale));
-
-			Bitmap newImage = filter.Apply(gray);
-			return newImage;
-		}
-
-		private Zone FindTemplate(Bitmap fullimage, Bitmap template)
-		{
-			var scale = 1;
-
-			Bitmap grayTemplate = TransformImage(template, scale);
-			Bitmap graySource = TransformImage(fullimage, scale);
-
-			Debug.WriteLine($"Searching {grayTemplate.Width}x{grayTemplate.Height} template in {graySource.Width}x{graySource.Height} image.");
-
-			// create template matching algorithm's instance
-			ExhaustiveTemplateMatching tm = new ExhaustiveTemplateMatching(0);
-			// find all matchings with specified above similarity
-
-			TemplateMatch[] matchings = tm.ProcessImage(graySource, grayTemplate);
-
-			if (matchings.Length == 0 || matchings[0].Similarity <= 0.8f)
-				return new Zone();
-			var r = matchings[0].Rectangle;
-
-			var z = new Zone { X = (int)(r.X / scale), Y = (int)(r.Y / scale), Width = (int)(r.Width / scale), Height = (int)(r.Height / scale) };
-			return z;
-
-		}
-		/*-------------------*/
 
 	}
 }

@@ -12,7 +12,7 @@ namespace VisualMountParking
 	{
 		DetectorParameters ArucoParameters;
 
-		private static Dictionary ArucoDict = new Dictionary(Dictionary.PredefinedDictionaryName.Dict4X4_50);
+		private static readonly Dictionary ArucoDict = new Dictionary(Dictionary.PredefinedDictionaryName.Dict4X4_50);
 		// bits x bits (per marker) _ <number of markers in dictionary>
 
 		//Mat cameraMatrix;
