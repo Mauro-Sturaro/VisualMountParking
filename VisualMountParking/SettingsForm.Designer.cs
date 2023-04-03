@@ -29,9 +29,6 @@
 		private void InitializeComponent()
 		{
 			this.btSave = new System.Windows.Forms.Button();
-			this.label3 = new System.Windows.Forms.Label();
-			this.txtRegionsCount = new System.Windows.Forms.TextBox();
-			this.btRegionsClear = new System.Windows.Forms.Button();
 			this.btLightOff = new System.Windows.Forms.Button();
 			this.btLightOn = new System.Windows.Forms.Button();
 			this.label4 = new System.Windows.Forms.Label();
@@ -69,8 +66,6 @@
 			this.numMarkerIdDec = new System.Windows.Forms.NumericUpDown();
 			this.numMarkerIdAr = new System.Windows.Forms.NumericUpDown();
 			this.label2 = new System.Windows.Forms.Label();
-			this.chkUseAruco = new System.Windows.Forms.CheckBox();
-			this.tabPage1 = new System.Windows.Forms.TabPage();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.btApply = new System.Windows.Forms.Button();
 			this.btCancel = new System.Windows.Forms.Button();
@@ -103,34 +98,6 @@
 			this.btSave.Text = "Save and Apply";
 			this.btSave.UseVisualStyleBackColor = true;
 			this.btSave.Click += new System.EventHandler(this.btSave_Click);
-			// 
-			// label3
-			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(25, 23);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(49, 13);
-			this.label3.TabIndex = 23;
-			this.label3.Text = "Regions:";
-			this.label3.TextAlign = System.Drawing.ContentAlignment.TopRight;
-			// 
-			// txtRegionsCount
-			// 
-			this.txtRegionsCount.Location = new System.Drawing.Point(80, 20);
-			this.txtRegionsCount.Name = "txtRegionsCount";
-			this.txtRegionsCount.ReadOnly = true;
-			this.txtRegionsCount.Size = new System.Drawing.Size(59, 20);
-			this.txtRegionsCount.TabIndex = 24;
-			// 
-			// btRegionsClear
-			// 
-			this.btRegionsClear.Location = new System.Drawing.Point(145, 19);
-			this.btRegionsClear.Name = "btRegionsClear";
-			this.btRegionsClear.Size = new System.Drawing.Size(44, 21);
-			this.btRegionsClear.TabIndex = 25;
-			this.btRegionsClear.Text = "Clear";
-			this.btRegionsClear.UseVisualStyleBackColor = true;
-			this.btRegionsClear.Click += new System.EventHandler(this.btRegionsClear_Click);
 			// 
 			// btLightOff
 			// 
@@ -403,7 +370,6 @@
 			this.tabDome.Controls.Add(this.tabPageCommands);
 			this.tabDome.Controls.Add(this.tabPageTelescope);
 			this.tabDome.Controls.Add(this.tabPageZone);
-			this.tabDome.Controls.Add(this.tabPage1);
 			this.tabDome.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tabDome.Location = new System.Drawing.Point(0, 0);
 			this.tabDome.Name = "tabDome";
@@ -557,10 +523,6 @@
 			this.tabPageZone.Controls.Add(this.numMarkerIdDec);
 			this.tabPageZone.Controls.Add(this.numMarkerIdAr);
 			this.tabPageZone.Controls.Add(this.label2);
-			this.tabPageZone.Controls.Add(this.chkUseAruco);
-			this.tabPageZone.Controls.Add(this.label3);
-			this.tabPageZone.Controls.Add(this.btRegionsClear);
-			this.tabPageZone.Controls.Add(this.txtRegionsCount);
 			this.tabPageZone.Location = new System.Drawing.Point(4, 22);
 			this.tabPageZone.Name = "tabPageZone";
 			this.tabPageZone.Size = new System.Drawing.Size(452, 379);
@@ -573,7 +535,7 @@
 			this.cmbMarkerDecDirection.Items.AddRange(new object[] {
             "X",
             "Y"});
-			this.cmbMarkerDecDirection.Location = new System.Drawing.Point(162, 119);
+			this.cmbMarkerDecDirection.Location = new System.Drawing.Point(164, 56);
 			this.cmbMarkerDecDirection.Name = "cmbMarkerDecDirection";
 			this.cmbMarkerDecDirection.Size = new System.Drawing.Size(46, 21);
 			this.cmbMarkerDecDirection.TabIndex = 32;
@@ -585,7 +547,7 @@
 			this.cmbMarkerArDirection.Items.AddRange(new object[] {
             "X",
             "Y"});
-			this.cmbMarkerArDirection.Location = new System.Drawing.Point(162, 93);
+			this.cmbMarkerArDirection.Location = new System.Drawing.Point(164, 30);
 			this.cmbMarkerArDirection.Name = "cmbMarkerArDirection";
 			this.cmbMarkerArDirection.Size = new System.Drawing.Size(46, 21);
 			this.cmbMarkerArDirection.TabIndex = 31;
@@ -594,7 +556,7 @@
 			// label11
 			// 
 			this.label11.AutoSize = true;
-			this.label11.Location = new System.Drawing.Point(25, 122);
+			this.label11.Location = new System.Drawing.Point(27, 59);
 			this.label11.Name = "label11";
 			this.label11.Size = new System.Drawing.Size(30, 13);
 			this.label11.TabIndex = 30;
@@ -603,14 +565,14 @@
 			// 
 			// numMarkerIdDec
 			// 
-			this.numMarkerIdDec.Location = new System.Drawing.Point(80, 120);
+			this.numMarkerIdDec.Location = new System.Drawing.Point(82, 57);
 			this.numMarkerIdDec.Name = "numMarkerIdDec";
 			this.numMarkerIdDec.Size = new System.Drawing.Size(59, 20);
 			this.numMarkerIdDec.TabIndex = 29;
 			// 
 			// numMarkerIdAr
 			// 
-			this.numMarkerIdAr.Location = new System.Drawing.Point(80, 94);
+			this.numMarkerIdAr.Location = new System.Drawing.Point(82, 31);
 			this.numMarkerIdAr.Name = "numMarkerIdAr";
 			this.numMarkerIdAr.Size = new System.Drawing.Size(59, 20);
 			this.numMarkerIdAr.TabIndex = 28;
@@ -618,32 +580,12 @@
 			// label2
 			// 
 			this.label2.AutoSize = true;
-			this.label2.Location = new System.Drawing.Point(25, 96);
+			this.label2.Location = new System.Drawing.Point(27, 33);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(31, 13);
 			this.label2.TabIndex = 27;
 			this.label2.Text = "A.R.:";
 			this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
-			// 
-			// chkUseAruco
-			// 
-			this.chkUseAruco.AutoSize = true;
-			this.chkUseAruco.Location = new System.Drawing.Point(260, 23);
-			this.chkUseAruco.Name = "chkUseAruco";
-			this.chkUseAruco.Size = new System.Drawing.Size(116, 17);
-			this.chkUseAruco.TabIndex = 26;
-			this.chkUseAruco.Text = "Use Aruco markers";
-			this.chkUseAruco.UseVisualStyleBackColor = true;
-			// 
-			// tabPage1
-			// 
-			this.tabPage1.Location = new System.Drawing.Point(4, 22);
-			this.tabPage1.Name = "tabPage1";
-			this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-			this.tabPage1.Size = new System.Drawing.Size(452, 379);
-			this.tabPage1.TabIndex = 4;
-			this.tabPage1.Text = "tabPage1";
-			this.tabPage1.UseVisualStyleBackColor = true;
 			// 
 			// panel1
 			// 
@@ -720,9 +662,6 @@
 
 		#endregion
 		private System.Windows.Forms.Button btSave;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.TextBox txtRegionsCount;
-		private System.Windows.Forms.Button btRegionsClear;
 		private System.Windows.Forms.Button btLightOff;
 		private System.Windows.Forms.Button btLightOn;
 		private System.Windows.Forms.Label label4;
@@ -757,13 +696,11 @@
 		private System.Windows.Forms.Label label10;
 		private System.Windows.Forms.Button btApply;
 		private System.Windows.Forms.Button btCancel;
-		private System.Windows.Forms.TabPage tabPage1;
 		private System.Windows.Forms.ComboBox cmbMarkerDecDirection;
 		private System.Windows.Forms.ComboBox cmbMarkerArDirection;
 		private System.Windows.Forms.Label label11;
 		private System.Windows.Forms.NumericUpDown numMarkerIdDec;
 		private System.Windows.Forms.NumericUpDown numMarkerIdAr;
 		private System.Windows.Forms.Label label2;
-		private System.Windows.Forms.CheckBox chkUseAruco;
 	}
 }

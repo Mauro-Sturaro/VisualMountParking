@@ -269,12 +269,7 @@ namespace VisualMountParking
 
 		internal IList<Zone> GetReferenceZone()
 		{
-			if (_Config.UseArucoMarkers)
-			{
-				return _PatternVerifier.ReferenceTemplates;
-			}
-			else
-				return _Config.Templates;
+			return _PatternVerifier.ReferenceTemplates;
 		}
 
 		internal IList<ZoneMatch> GetZoneMatch(bool all = true)

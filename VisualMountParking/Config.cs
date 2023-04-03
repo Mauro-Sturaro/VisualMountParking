@@ -12,8 +12,6 @@ namespace VisualMountParking
 	public class Config
 	{
 		#region AutoPark settings
-		public List<Zone> Templates { get; set; } = new List<Zone>();
-		public bool UseArucoMarkers { get; set; }
 		public AutoParkSetting AutoParkAR { get; set; }
 		public AutoParkSetting AutoParkDec { get; set; }
 
@@ -123,14 +121,6 @@ namespace VisualMountParking
 				cfg.AutoParkAR=new AutoParkSetting();
 			if(cfg.AutoParkDec is null)
 				cfg.AutoParkDec=new AutoParkSetting();
-
-			for (int i = 0; i < cfg.Templates.Count; i++)
-			{
-				var t = cfg.Templates[i];
-				if (t.Id <= 0)
-					t.Id = i + 1;
-			}
-
 			return cfg;
 		}
 

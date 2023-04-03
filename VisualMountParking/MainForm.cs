@@ -77,61 +77,6 @@ namespace VisualMountParking
 			_vpDriver.Initialize(config);
 			picReference.Image = _vpDriver.CurrentImage;
 		}
-		private void picReference_MouseDown(object sender, MouseEventArgs e)
-		{
-			if (_MouseDragging == false && !config.UseArucoMarkers)
-			{
-				_SelectionFirstPoint = e.Location;
-				_MouseDragging = true;
-				picReference.Cursor = Cursors.Cross;
-			}
-		}
-
-		private void picReference_MouseMove(object sender, MouseEventArgs e)
-		{
-			_SelectionLastPoint = e.Location;
-			picReference.Invalidate();
-		}
-
-		private void picReference_MouseUp(object sender, MouseEventArgs e)
-		{
-			if (_MouseDragging)
-			{
-
-				//
-				GetStretch(picReference, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
-
-				// Raddrizza le coordinate se necessario
-				SortPoint(_SelectionFirstPoint, e.Location, out var startPoint, out var endPoint);
-
-
-				// Calcola il rettangolo rispetto all'immagine reale
-				Zone item = new Zone
-				{
-					X = (int)((startPoint.X - shiftX) / stretchX),
-					Y = (int)((startPoint.Y - shiftY) / stretchY),
-					Width = (int)((endPoint.X - startPoint.X) / stretchX),
-					Height = (int)((endPoint.Y - startPoint.Y) / stretchY)
-				};
-
-				// Se è troppo piccolo lo scarta, altrimenti lo aggiunge ai template
-				if (item.Width >= 10 && item.Height >= 10)
-				{
-					int i = 1;
-					for (; i <= config.Templates.Count; i++)
-					{
-						if (!config.Templates.Exists((z) => z.Id == i))
-							break;
-					}
-					item.Id = i;
-					config.Templates.Add(item);
-				}
-
-				//				
-				Cursor.Current = Cursors.Default;
-				_MouseDragging = false;
-			}
-		}
 
 		private static void SortPoint(Point point1, Point point2, out Point topLeft, out Point bottomRight)
 		{
@@ -161,24 +106,6 @@ namespace VisualMountParking
 			}
 		}
 
-		private void picReference_Click(object sender, EventArgs e)
-		{
-			MouseEventArgs me = (MouseEventArgs)e;
-			GetStretch(picReference, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
-			var X = (me.X - shiftX) / stretchX;
-			var Y = (me.Y - shiftY) / stretchY;
-			for (int i = config.Templates.Count - 1; i >= 0; i--)
-			{
-				Zone tp = config.Templates[i];
-				if (tp.X <= X && X <= tp.X + tp.Width && tp.Y <= Y && Y <= tp.Y + tp.Height)
-				{
-					config.Templates.RemoveAt(i);
-				}
-			}
-
-		}
-
-
 		static readonly Pen penOk1 = new Pen(Color.DarkGreen, 3);
 		static readonly Pen penOk2 = new Pen(Color.LightGreen, 1);
 		static readonly Pen penRef1 = new Pen(Color.DarkBlue, 3);
@@ -205,7 +132,7 @@ namespace VisualMountParking
 				var x = (int)((sp == null ? tp.X : sp.X) * stretchX) + shiftX;
 				var y = (int)((sp == null ? tp.Y : sp.Y) * stretchY) + shiftY;
 
-				if (sp != null && tp != null && sp.X == tp.X && sp.Y == tp.Y && sp.Width == tp.Width && sp.Height == tp.Height)
+				if (sp != null && tp != null && sp.X == tp.X && sp.Y == tp.Y)
 				{
 					// Green cross
 					DrawMarker(g, penOk1, x, y);

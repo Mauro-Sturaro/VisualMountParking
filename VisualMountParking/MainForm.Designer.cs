@@ -72,11 +72,7 @@
 			this.picReference.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
 			this.picReference.TabIndex = 6;
 			this.picReference.TabStop = false;
-			this.picReference.Click += new System.EventHandler(this.picReference_Click);
 			this.picReference.Paint += new System.Windows.Forms.PaintEventHandler(this.picReference_Paint);
-			this.picReference.MouseDown += new System.Windows.Forms.MouseEventHandler(this.picReference_MouseDown);
-			this.picReference.MouseMove += new System.Windows.Forms.MouseEventHandler(this.picReference_MouseMove);
-			this.picReference.MouseUp += new System.Windows.Forms.MouseEventHandler(this.picReference_MouseUp);
 			// 
 			// picCurrent
 			// 

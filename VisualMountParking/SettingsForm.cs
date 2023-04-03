@@ -70,8 +70,6 @@ namespace VisualMountParking
 			txtSource.Text = Config.Source;
 
 			// AutoPark
-			txtRegionsCount.Text = Config.Templates.Count.ToString();
-			chkUseAruco.Checked = Config.UseArucoMarkers;
 			numMarkerIdAr.Value = Config.AutoParkAR.ZoneId;
 			numMarkerIdDec.Value = Config.AutoParkDec.ZoneId;
 			cmbMarkerArDirection.SelectedIndex = Config.AutoParkAR.Direction == ShiftDirection.X? 0 : 1;
@@ -89,7 +87,6 @@ namespace VisualMountParking
 			Config.FastTimeMultiplier = numFastTime.Value;
 
 			// AutoPark			
-			Config.UseArucoMarkers = chkUseAruco.Checked;
 			Config.AutoParkAR.ZoneId =(int)numMarkerIdAr.Value;
 			Config.AutoParkDec.ZoneId = (int)numMarkerIdDec.Value;
 			Config.AutoParkAR.Direction = cmbMarkerArDirection.SelectedIndex == 0 ? ShiftDirection.X: ShiftDirection.Y;
@@ -116,12 +113,6 @@ namespace VisualMountParking
 					txtSource.AutoCompleteSource = AutoCompleteSource.HistoryList;
 					break;
 			}
-		}
-
-		private void btRegionsClear_Click(object sender, EventArgs e)
-		{
-			Config.Templates.Clear();
-			txtRegionsCount.Text = "0";
 		}
 
 		private void btLightOn_Click(object sender, EventArgs e)
