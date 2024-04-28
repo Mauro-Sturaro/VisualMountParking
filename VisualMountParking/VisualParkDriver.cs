@@ -223,19 +223,22 @@ namespace VisualMountParking
 		private EventHandler _ImageUpdated;
 		public event EventHandler ImageUpdated { add { _ImageUpdated += value; } remove { _ImageUpdated -= value; } }
 
-		public async Task<Image> LoadNewImage()
+		public async Task<bool> LoadNewImage()
 		{
 			var image = await _WebUtils.LoadImageAsync(_Config.SourceType, _Config.Source);
 			if (Brighness != 50 || Contrast != 50)
 				image = AdjustBrightness(image, Brighness / 50, Contrast / 50); /* range 0-2 */
 
-			_PatternVerifier.NewImage = new Bitmap(image);
+			_PatternVerifier.NewImage?.Dispose();
+            _PatternVerifier.NewImage = new Bitmap(image);
+			CurrentImage?.Dispose();
 			CurrentImage = new Bitmap(image);
 			////-- per debug
 			//CurrentImage = _PatternVerifier.GetDetectionImage();
 			////
 			_ImageUpdated?.Invoke(this, EventArgs.Empty);
-			return image;
+			image.Dispose();
+			return true;
 		}
 
 		public async Task CheckPosition()

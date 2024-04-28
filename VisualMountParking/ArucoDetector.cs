@@ -5,132 +5,225 @@ using Emgu.CV;
 using System;
 using System.Drawing;
 using System.Collections.Generic;
+using Emgu.CV.CvEnum;
+using System.Diagnostics;
 
 namespace VisualMountParking
 {
-	public class ArucoDetector
-	{
-		DetectorParameters ArucoParameters;
+    public class ArucoDetector
+    {
 
-		private static readonly Dictionary ArucoDict = new Dictionary(Dictionary.PredefinedDictionaryName.Dict4X4_50);
-		// bits x bits (per marker) _ <number of markers in dictionary>
+        DetectorParameters ArucoParameters;
 
-		//Mat cameraMatrix;
-		//Mat distortionMatrix;
+        private static readonly Dictionary ArucoDict = new Dictionary(Dictionary.PredefinedDictionaryName.Dict4X4_50);
+        // bits x bits (per marker) _ <number of markers in dictionary>
 
-		public void Initialize()
-		{
-			#region Initialize Aruco parameters for markers detection
-			//ArucoParameters = new DetectorParameters();
-			ArucoParameters = DetectorParameters.GetDefault();
+        //Mat cameraMatrix;
+        //Mat distortionMatrix;
 
-			// Regoliamo quali rettangoli vede
-			ArucoParameters.MinMarkerPerimeterRate = 0.06;
-			ArucoParameters.MaxMarkerPerimeterRate = 0.1;
-			ArucoParameters.MinCornerDistanceRate = 0.15;
+        public void Initialize()
+        {
+            #region Initialize Aruco parameters for markers detection
+            //ArucoParameters = new DetectorParameters();
+            ArucoParameters = DetectorParameters.GetDefault();
 
-			// ora la quantizzazione
-			ArucoParameters.PerspectiveRemovePixelPerCell = 4;
-			ArucoParameters.PerspectiveRemoveIgnoredMarginPerCell = 0.4;
+            // Regoliamo quali rettangoli vede
+            ArucoParameters.MinMarkerPerimeterRate = 0.06;
+            ArucoParameters.MaxMarkerPerimeterRate = 0.1;
+            ArucoParameters.MinCornerDistanceRate = 0.15;
 
-			// ed infine la robustezza agli errori
-			ArucoParameters.MaxErroneousBitsInBorderRate = 0.8;
-			ArucoParameters.ErrorCorrectionRate = 1;
+            // ora la quantizzazione
+            ArucoParameters.PerspectiveRemovePixelPerCell = 4;
+            ArucoParameters.PerspectiveRemoveIgnoredMarginPerCell = 0.4;
 
-
-			#endregion
-
-			//#region Initialize Camera calibration matrix with distortion coefficients 
-			//// Calibration done with https://docs.opencv.org/3.4.3/d7/d21/tutorial_interactive_calibration.html
-			//string cameraConfigurationFile = "c:\\temp\\cameraParameters.xml";
-			//FileStorage fs = new FileStorage(cameraConfigurationFile, FileStorage.Mode.Read);
-			//if (!fs.IsOpened)
-			//{
-			//	Console.WriteLine("Could not open configuration file " + cameraConfigurationFile);
-			//	return;
-			//}
-			//cameraMatrix = new Mat(new Size(3, 3), DepthType.Cv32F, 1);
-			//distortionMatrix = new Mat(1, 8, DepthType.Cv32F, 1);
-			//fs["cameraMatrix"].ReadMat(cameraMatrix);
-			//fs["dist_coeffs"].ReadMat(distortionMatrix);
-			//#endregion
-
-		}
+            // ed infine la robustezza agli errori
+            ArucoParameters.MaxErroneousBitsInBorderRate = 0.8;
+            ArucoParameters.ErrorCorrectionRate = 1;
 
 
-		public Bitmap ShowMarkers(Bitmap image, bool showDetected = false)
-		{
-			image = ConvertTo24bpp(image);
-			var frame = image.ToMat();
-			AnalyzeFrame(frame, showDetected);
-			var res = frame.ToBitmap();
-			return res;
-		}
-		private void AnalyzeFrame(Mat frame, bool showDetected = false)
-		{
-			if (!frame.IsEmpty)
-			{
-				#region Detect markers on last retrieved frame
-				VectorOfInt ids = new VectorOfInt(); // name/id of the detected markers
-				using (VectorOfVectorOfPointF corners = new VectorOfVectorOfPointF()) // corners of the detected marker)
-				using (VectorOfVectorOfPointF rejected = new VectorOfVectorOfPointF()) // rejected contours
-				{
+            #endregion
 
-					ArucoInvoke.DetectMarkers(frame, ArucoDict, corners, ids, ArucoParameters, rejected);
-					#endregion					
+            //#region Initialize Camera calibration matrix with distortion coefficients 
+            //// Calibration done with https://docs.opencv.org/3.4.3/d7/d21/tutorial_interactive_calibration.html
+            //string cameraConfigurationFile = "c:\\temp\\cameraParameters.xml";
+            //FileStorage fs = new FileStorage(cameraConfigurationFile, FileStorage.Mode.Read);
+            //if (!fs.IsOpened)
+            //{
+            //	Console.WriteLine("Could not open configuration file " + cameraConfigurationFile);
+            //	return;
+            //}
+            //cameraMatrix = new Mat(new Size(3, 3), DepthType.Cv32F, 1);
+            //distortionMatrix = new Mat(1, 8, DepthType.Cv32F, 1);
+            //fs["cameraMatrix"].ReadMat(cameraMatrix);
+            //fs["dist_coeffs"].ReadMat(distortionMatrix);
+            //#endregion
 
-					if (showDetected)
-					{
-						VectorOfInt rejectedId = new VectorOfInt(0);
-						ArucoInvoke.DrawDetectedMarkers(frame, rejected, rejectedId, new MCvScalar(0, 0, 255));
-					}
-
-					// If we detected at least one marker
-					if (ids.Size > 0)
-					{
-						ArucoInvoke.DrawDetectedMarkers(frame, corners, ids, new MCvScalar(255, 0, 255));
-					}
-				}
-			}
-		}
-
-		public static Bitmap ConvertTo24bpp(Image img)
-		{
-			var bmp = new Bitmap(img.Width, img.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
-			using (var gr = Graphics.FromImage(bmp))
-				gr.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height));
-			return bmp;
-		}
+        }
 
 
-		public IList<ArucoFind> FindMarkers(Bitmap image)
-		{
-			var result = new List<ArucoFind>();
-			image = ConvertTo24bpp(image);
-			var frame = image.ToMat();
+        public Bitmap ShowMarkers(Bitmap image, bool showDetected = false)
+        {
+            var image24 = ConvertTo24bpp(image);
+            image.Dispose();
+            var frame = image24.ToMat();
+            AnalyzeFrame(frame, showDetected);
+            var res = frame.ToBitmap();
+            return res;
+        }
+        private void AnalyzeFrame(Mat frame, bool showDetected = false)
+        {
+            if (!frame.IsEmpty)
+            {
+                #region Detect markers on last retrieved frame
+                VectorOfInt ids = new VectorOfInt(); // name/id of the detected markers
+                using (VectorOfVectorOfPointF corners = new VectorOfVectorOfPointF()) // corners of the detected marker)
+                using (VectorOfVectorOfPointF rejected = new VectorOfVectorOfPointF()) // rejected contours
+                {
 
-			// Detect markers  
-			VectorOfInt ids = new VectorOfInt(); // name/id of the detected markers
-			using (VectorOfVectorOfPointF corners = new VectorOfVectorOfPointF()) // corners of the detected marker
-			using (VectorOfVectorOfPointF rejected = new VectorOfVectorOfPointF()) // rejected contours
-			{
-				ArucoInvoke.DetectMarkers(frame, ArucoDict, corners, ids, ArucoParameters, rejected);
+                    ArucoInvoke.DetectMarkers(frame, ArucoDict, corners, ids, ArucoParameters, rejected);
+                    #endregion
 
-				for (int i = 0; i < ids.Size; i++)
-				{
-					result.Add(new ArucoFind { Id = ids[i], Position = corners[i][0] });
-				}
-			}
+                    if (showDetected)
+                    {
+                        VectorOfInt rejectedId = new VectorOfInt(0);
+                        ArucoInvoke.DrawDetectedMarkers(frame, rejected, rejectedId, new MCvScalar(0, 0, 255));
+                    }
 
-			return result;
-		}
-	}
+                    // If we detected at least one marker
+                    if (showDetected && ids.Size > 0)
+                    {
+                        ArucoInvoke.DrawDetectedMarkers(frame, corners, ids, new MCvScalar(255, 0, 255));
 
-	public class ArucoFind
-	{
-		public int Id { get; set; }
-		public PointF Position { get; set; }
-	}
+                        #region Initialize Camera calibration matrix with distortion coefficients 
+                        // Calibration done with https://docs.opencv.org/3.4.3/d7/d21/tutorial_interactive_calibration.html
+                        String cameraConfigurationFile = @"c:\temp\cameraParameters.xml";
+                        FileStorage fs = new FileStorage(cameraConfigurationFile, FileStorage.Mode.Read);
+                        if (!fs.IsOpened)
+                        {
+                            Console.WriteLine("Could not open configuration file " + cameraConfigurationFile);
+                            return;
+                        }
+                        Mat cameraMatrix = new Mat(new Size(3, 3), DepthType.Cv32F, 1);
+                        Mat distortionMatrix = new Mat(1, 8, DepthType.Cv32F, 1);
+                        fs["cameraMatrix"].ReadMat(cameraMatrix);
+                        fs["dist_coeffs"].ReadMat(distortionMatrix);
+                        #endregion
+
+                        #region Estimate pose for each marker using camera calibration matrix and distortion coefficents
+                        int markersLength = 80;
+
+                        Mat rvecs = new Mat(); // rotation vector
+                        Mat tvecs = new Mat(); // translation vector
+                        ArucoInvoke.EstimatePoseSingleMarkers(corners, markersLength, cameraMatrix, distortionMatrix, rvecs, tvecs);
+                        #endregion
+
+                        #region Draw 3D orthogonal axis on markers using estimated pose
+                        for (int i = 0; i < ids.Size; i++)
+                        {
+                            using (Mat rvecMat = rvecs.Row(i))
+                            using (Mat tvecMat = tvecs.Row(i))
+                            using (VectorOfDouble rvec = new VectorOfDouble())
+                            using (VectorOfDouble tvec = new VectorOfDouble())
+                            {
+                                var id = ids[i];
+                                double[] values = new double[3];
+                                rvecMat.CopyTo(values);
+                                rvec.Push(values);
+                                tvecMat.CopyTo(values);
+                                tvec.Push(values);
+                                // ArucoInvoke.DrawAxis(frame, cameraMatrix, distortionMatrix, rvec, tvec, markersLength * 0.5f);
+                                Debug.WriteLine($"{i}) id={id} ({rvec[0]},{rvec[1]},{rvec[2]}) ({tvec[0]},{tvec[1]},{tvec[2]})");
+                            }
+                        }
+                        #endregion
+
+
+                    }
+                }
+            }
+        }
+
+        public static Bitmap ConvertTo24bpp(Image img)
+        {
+            var bmp = new Bitmap(img.Width, img.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
+            using (var gr = Graphics.FromImage(bmp))
+                gr.DrawImage(img, new Rectangle(0, 0, img.Width, img.Height));
+            return bmp;
+        }
+
+
+        public IList<ArucoFind> FindMarkers(Bitmap image)
+        {
+            var result = new List<ArucoFind>();
+            var image24 = ConvertTo24bpp(image);            
+            var frame = image24.ToMat();
+            image24.Dispose();
+
+
+            // Detect markers  
+            VectorOfInt ids = new VectorOfInt(); // name/id of the detected markers
+            using (VectorOfVectorOfPointF corners = new VectorOfVectorOfPointF()) // corners of the detected marker
+            using (VectorOfVectorOfPointF rejected = new VectorOfVectorOfPointF()) // rejected contours
+            {
+                ArucoInvoke.DetectMarkers(frame, ArucoDict, corners, ids, ArucoParameters, rejected);
+
+                for (int i = 0; i < ids.Size; i++)
+                {
+                    result.Add(new ArucoFind { Id = ids[i], Position = corners[i][0] });
+                }
+            }
+
+            return result;
+        }
+
+        public static void PrintCharucoBoard(string filename)
+        {
+            // ChArUco_Board
+
+            const int SquaresX = 8;
+            const int SquaresY = 6;
+            const int SquareLength = 20;
+            const int MarkerLength = 15;
+            var charucoBoard = new CharucoBoard(SquaresX, SquaresY, SquareLength, MarkerLength, ArucoDict);
+
+            const int Width = 1000;
+            const int Height = Width / SquaresX * SquaresY;
+
+            Size imageSize = new Size(Width, Height );
+            Mat img = new Mat();
+            charucoBoard.Draw(imageSize, img, 40, 1);
+            img.Save(filename);
+
+
+        }
+
+        public static void PrintArucoBoard(string filename)
+        {
+            int markersX = 7;
+            int markersY = 5;
+            int markersLength = 80;
+            int markersSeparation = 30;
+
+            GridBoard ArucoBoard = new GridBoard(markersX, markersY, markersLength, markersSeparation, ArucoDict);
+
+            // Draw the board on a cv::Mat
+            Size imageSize = new Size();
+            Mat boardImage = new Mat();
+            imageSize.Width = markersX * (markersLength + markersSeparation) - markersSeparation + 2 * markersSeparation;
+            imageSize.Height = markersY * (markersLength + markersSeparation) - markersSeparation + 2 * markersSeparation;
+            ArucoInvoke.DrawPlanarBoard(ArucoBoard, imageSize, boardImage, 30);
+
+            // Save the image
+            boardImage.Save(filename);
+        }
+
+    }
+
+    public class ArucoFind
+    {
+        public int Id { get; set; }
+        public PointF Position { get; set; }
+    }
 
 
 }
