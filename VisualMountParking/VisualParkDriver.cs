@@ -29,6 +29,7 @@ namespace VisualMountParking
 
         private void ConnectCamera(Config config)
         {
+            _Camera?.Dispose();
             try
             {
                 _Camera = CameraFactory.Instance.GetCamera(config.CameraName);

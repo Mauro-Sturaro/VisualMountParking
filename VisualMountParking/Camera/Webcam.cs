@@ -11,36 +11,51 @@ namespace VisualMountParking.Camera
     internal class Webcam : ICamera
     {
         string param;
-        VideoCapture capture;
+        VideoCapture _capture;
+        Mat _frame = new Mat();
 
         void ICamera.Initialize(string settings)
         {
             param = settings;
         }
 
-        Task<Bitmap> ICamera.LoadImageAsync()
+        async Task<Bitmap> ICamera.LoadImageAsync()
         {
             Bitmap b;
 
-            if (capture == null)
+            if (_capture == null)
             {
                 if (!int.TryParse(param, out var n))
                     n = 0;
-                capture = new VideoCapture(n,VideoCapture.API.DShow);
+                _capture = new VideoCapture(n, VideoCapture.API.DShow);
+                _capture.ImageGrabbed += Capture_ImageGrabbed;
+                _capture.Start();            
+                await Task.Delay(200);
             }
-            int repeat = 10;
-            Mat frame =null;
-            while (frame is null && repeat-- > 0)
-            {
-                frame = capture.QueryFrame();
-            }
+            var frame = _capture.QueryFrame();
             if (frame is null)
-                return Task.FromResult(Resources.error);
+                return Resources.error;
             else
             {
                 b = frame.ToBitmap();
-                return Task.FromResult(b);
+                return b;
             }
+        }
+
+        private void Capture_ImageGrabbed(object sender, EventArgs e)
+        {
+            if (_capture != null && _capture.Ptr != IntPtr.Zero)
+            {
+                _capture.Retrieve(_frame, 0);
+            }
+        }
+
+        public void Dispose()
+        {
+            _capture?.Stop();
+            _capture?.Dispose();
+            _capture = null;
+            System.GC.SuppressFinalize(this);
         }
     }
 }

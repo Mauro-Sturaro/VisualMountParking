@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Security.AccessControl;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace VisualMountParking.Camera
 {
-    internal interface ICamera
+    internal interface ICamera : IDisposable
     {
         void Initialize(string settings);
         Task<Bitmap> LoadImageAsync();

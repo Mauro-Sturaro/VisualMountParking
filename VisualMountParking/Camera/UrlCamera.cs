@@ -39,6 +39,11 @@ namespace VisualMountParking.Camera
                 return Resources.error;
             }
         }
+
+        public void Dispose()
+        {
+            System.GC.SuppressFinalize(this);
+        }
     }
 
 }

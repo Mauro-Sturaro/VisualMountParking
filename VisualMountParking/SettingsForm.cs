@@ -28,15 +28,17 @@ namespace VisualMountParking
         {
             try
             {
-                var camera = CameraFactory.Instance.GetCamera(Config.CameraName);
-                camera.Initialize(Config.CameraSettings);
-
-                var img = AsyncUtil.RunSync(camera.LoadImageAsync);
-                if (img != null)
+                using (var camera = CameraFactory.Instance.GetCamera(Config.CameraName))
                 {
-                    picPreview.Image = img;
-                    btSetAsReference.Enabled = true;
-                    btExportPreview.Enabled = true;
+                    camera.Initialize(Config.CameraSettings);
+
+                    var img = AsyncUtil.RunSync(camera.LoadImageAsync);
+                    if (img != null)
+                    {
+                        picPreview.Image = img;
+                        btSetAsReference.Enabled = true;
+                        btExportPreview.Enabled = true;
+                    }
                 }
             }
             catch (Exception ex)

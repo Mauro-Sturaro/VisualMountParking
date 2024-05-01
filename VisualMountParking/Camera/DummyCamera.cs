@@ -6,7 +6,9 @@ namespace VisualMountParking.Camera
 {
     internal class DummyCamera : ICamera
     {
-        public void Initialize(string jsonSettings)
+        private bool disposedValue;
+
+        public void Initialize(string settings)
         {
 
         }
@@ -23,6 +25,11 @@ namespace VisualMountParking.Camera
                 }
             }
             return Task.FromResult(b);
+        }
+
+        public void Dispose()
+        {
+            System.GC.SuppressFinalize(this);
         }
     }
 }
