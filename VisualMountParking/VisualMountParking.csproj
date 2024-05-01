@@ -103,6 +103,7 @@
     </Compile>
     <Compile Include="Enums.cs" />
     <Compile Include="Markers\ArucoFind.cs" />
+    <Compile Include="Markers\ArucoUtilities.cs" />
     <Compile Include="VisualParkDriver.cs" />
     <Compile Include="WebUtils.cs" />
     <Compile Include="PatternVerifier.cs" />
@@ -157,14 +158,14 @@
     <None Include="Resources\error.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CaptureManager">
-      <Version>1.24.0</Version>
-    </PackageReference>
     <PackageReference Include="Emgu.CV.runtime.windows">
       <Version>4.8.1.5350</Version>
     </PackageReference>
     <PackageReference Include="Emgu.CV.UI">
       <Version>4.8.1.5350</Version>
+    </PackageReference>
+    <PackageReference Include="FlashCap">
+      <Version>1.10.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

@@ -6,8 +6,6 @@ namespace VisualMountParking.Camera
 {
     internal class DummyCamera : ICamera
     {
-        private bool disposedValue;
-
         public void Initialize(string settings)
         {
 

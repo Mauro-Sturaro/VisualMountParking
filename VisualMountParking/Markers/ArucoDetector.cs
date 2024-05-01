@@ -15,8 +15,7 @@ namespace VisualMountParking.Markers
 
         DetectorParameters ArucoParameters;
 
-        private static readonly Dictionary ArucoDict = new Dictionary(Dictionary.PredefinedDictionaryName.Dict4X4_50);
-        // bits x bits (per marker) _ <number of markers in dictionary>
+        private static readonly Dictionary ArucoDict = ArucoUtilities.ArucoDict; 
 
         //Mat cameraMatrix;
         //Mat distortionMatrix;
@@ -168,14 +167,6 @@ namespace VisualMountParking.Markers
             }
         }
 
-        private void Draw(Mat img, VectorOfPointF corners, VectorOfPointF imgpts)
-        {
-            var corner = Point.Round(corners[0]);
-            CvInvoke.Line(img, corner, Point.Round(imgpts[0]), new MCvScalar(255, 0, 0), 5);
-            CvInvoke.Line(img, corner, Point.Round(imgpts[1]), new MCvScalar(0, 255, 0), 5);
-            CvInvoke.Line(img, corner, Point.Round(imgpts[2]), new MCvScalar(0, 0, 255), 5);
-        }
-
         private static Bitmap ConvertTo24bpp(Image img)
         {
             var bmp = new Bitmap(img.Width, img.Height, System.Drawing.Imaging.PixelFormat.Format24bppRgb);
@@ -191,65 +182,19 @@ namespace VisualMountParking.Markers
             var frame = image24.ToMat();
             image24.Dispose();
 
-
             // Detect markers  
             VectorOfInt ids = new VectorOfInt(); // name/id of the detected markers
             using (VectorOfVectorOfPointF corners = new VectorOfVectorOfPointF()) // corners of the detected marker
-            using (VectorOfVectorOfPointF rejected = new VectorOfVectorOfPointF()) // rejected contours
             {
-                ArucoInvoke.DetectMarkers(frame, ArucoDict, corners, ids, ArucoParameters, rejected);
-
+                ArucoInvoke.DetectMarkers(frame, ArucoDict, corners, ids, ArucoParameters);
                 for (int i = 0; i < ids.Size; i++)
                 {
                     result.Add(new ArucoFind { Id = ids[i], Position = corners[i][0] });
                 }
             }
-
             return result;
         }
 
-        public static void PrintCharucoBoard(string filename)
-        {
-            // ChArUco_Board
-
-            const int SquaresX = 8;
-            const int SquaresY = 6;
-            const int SquareLength = 20;
-            const int MarkerLength = 15;
-            var charucoBoard = new CharucoBoard(SquaresX, SquaresY, SquareLength, MarkerLength, ArucoDict);
-
-            const int Width = 1000;
-            const int Height = Width / SquaresX * SquaresY;
-
-            Size imageSize = new Size(Width, Height);
-            Mat img = new Mat();
-            charucoBoard.GenerateImage(imageSize, img, 40, 1);
-            img.Save(filename);
-
-
-        }
-
-        public static void PrintArucoBoard(string filename)
-        {
-            int markersX = 7;
-            int markersY = 5;
-            int markersLength = 80;
-            int markersSeparation = 30;
-
-            GridBoard ArucoBoard = new GridBoard(markersX, markersY, markersLength, markersSeparation, ArucoDict);
-
-            // Draw the board on a cv::Mat
-            Size imageSize = new Size();
-            Mat boardImage = new Mat();
-            imageSize.Width = markersX * (markersLength + markersSeparation) - markersSeparation + 2 * markersSeparation;
-            imageSize.Height = markersY * (markersLength + markersSeparation) - markersSeparation + 2 * markersSeparation;
-            ArucoInvoke.DrawPlanarBoard(ArucoBoard, imageSize, boardImage, 30);
-
-            // Save the image
-            boardImage.Save(filename);
-        }
 
     }
-
-
 }

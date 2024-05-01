@@ -573,8 +573,8 @@ namespace VisualMountParking
 
         private void btPrintCalibration_Click(object sender, EventArgs e)
         {
-            ArucoDetector.PrintCharucoBoard(@"C:\temp\ChArUco_Board.png");
-            ArucoDetector.PrintArucoBoard(@"C:\temp\ArUco_Board.png");
+            ArucoUtilities.PrintCharucoBoard(@"C:\temp\ChArUco_Board.png");
+            ArucoUtilities.PrintArucoBoard(@"C:\temp\ArUco_Board.png");
         }
 
         private void btCalibration_Click(object sender, EventArgs e)
