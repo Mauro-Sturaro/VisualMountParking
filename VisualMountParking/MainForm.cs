@@ -8,12 +8,13 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VisualMountParking.Markers;
 using VisualMountParking.Properties;
 
 namespace VisualMountParking
 {
 
-    // REOLINK Camera WebAPI documentation https://drive.google.com/file/d/15AFMQSMlMdpjL2USPsvYd-J9xWecrEf9/view
+
     public partial class MainForm : Form
     {
         bool _MouseDragging = false;
@@ -121,6 +122,8 @@ namespace VisualMountParking
 
         private void picCurrent_Paint(object sender, PaintEventArgs e)
         {
+            if (chkFreezeImage.Checked)
+                return;
             if (picCurrent.Image == null)
                 return;
             GetStretch((PictureBox)sender, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
@@ -579,6 +582,7 @@ namespace VisualMountParking
             var aruco = new ArucoDetector();
             
         }
+
     }
 
 

@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using VisualMountParking.Markers;
 
 
 namespace VisualMountParking
 {
-	public class PatternVerifier
+    public class PatternVerifier
 	{
 
 		public Bitmap NewImage { get; set; }

@@ -96,9 +96,9 @@
             this.chkImageSize.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkImageSize.Location = new System.Drawing.Point(146, 5);
             this.chkImageSize.Name = "chkImageSize";
-            this.chkImageSize.Size = new System.Drawing.Size(88, 17);
+            this.chkImageSize.Size = new System.Drawing.Size(89, 17);
             this.chkImageSize.TabIndex = 25;
-            this.chkImageSize.Text = "Zoom/Shrink";
+            this.chkImageSize.Text = "Resize image";
             this.chkImageSize.UseVisualStyleBackColor = true;
             this.chkImageSize.CheckedChanged += new System.EventHandler(this.chkImageSize_CheckedChanged);
             // 

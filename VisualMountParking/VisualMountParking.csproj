@@ -64,24 +64,23 @@
     <Reference Include="ASCOM.Utilities, Version=6.0.0.0, Culture=neutral, PublicKeyToken=565de7938946fba7, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Text.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArucoDetector.cs" />
+    <Compile Include="Markers\ArucoDetector.cs" />
     <Compile Include="AsyncUtil.cs" />
     <Compile Include="AutoParkSetting.cs" />
-    <Compile Include="BitmapJsonConverter.cs" />
+    <Compile Include="Camera\CameraFactory.cs" />
+    <Compile Include="Camera\DummyCamera.cs" />
+    <Compile Include="Camera\FileCamera.cs" />
+    <Compile Include="Camera\ICamera.cs" />
+    <Compile Include="Camera\UrlCamera.cs" />
+    <Compile Include="Camera\Webcam.cs" />
     <Compile Include="CommandUri.cs" />
     <Compile Include="EditCommand.cs">
       <SubType>Form</SubType>
@@ -102,6 +101,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Enums.cs" />
+    <Compile Include="Markers\ArucoFind.cs" />
     <Compile Include="VisualParkDriver.cs" />
     <Compile Include="WebUtils.cs" />
     <Compile Include="PatternVerifier.cs" />
@@ -114,8 +114,8 @@
     <Compile Include="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Zone.cs" />
-    <Compile Include="ZoneMatch.cs" />
+    <Compile Include="Markers\Zone.cs" />
+    <Compile Include="Markers\ZoneMatch.cs" />
     <EmbeddedResource Include="EditCommand.resx">
       <DependentUpon>EditCommand.cs</DependentUpon>
     </EmbeddedResource>
@@ -157,10 +157,10 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Emgu.CV.runtime.windows">
-      <Version>4.6.0.5131</Version>
+      <Version>4.8.1.5350</Version>
     </PackageReference>
     <PackageReference Include="Emgu.CV.UI">
-      <Version>4.6.0.5131</Version>
+      <Version>4.8.1.5350</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

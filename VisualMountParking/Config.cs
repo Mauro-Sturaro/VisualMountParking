@@ -22,8 +22,8 @@ namespace VisualMountParking
 
 		[JsonIgnore] // We save the image as a distinct file
 		public Bitmap ReferenceImage { get; set; }
-		public string Source { get; set; }
-		public ImageSourceType SourceType { get; set; }
+		public string CameraSettings { get; set; }
+		public string CameraName{ get; set; }
 
 		#endregion
 
