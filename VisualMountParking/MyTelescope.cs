@@ -76,7 +76,7 @@ namespace VisualMountParking
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var delay = (int)(time * 100);
+            var delay = (int)(time * 1000);
             try
             {
                 _Telescope.MoveAxis(axis, validRate);
@@ -85,6 +85,7 @@ namespace VisualMountParking
             finally
             {
                 _Telescope.MoveAxis(axis, 0);
+                _Telescope.AbortSlew();
                 await Task.Delay(100, cancellationToken);
                 if (_Telescope.Slewing)
                 {

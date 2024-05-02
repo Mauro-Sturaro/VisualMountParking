@@ -254,7 +254,7 @@
             // 
             // numDecTime
             // 
-            this.numDecTime.DecimalPlaces = 1;
+            this.numDecTime.DecimalPlaces = 2;
             this.numDecTime.Increment = new decimal(new int[] {
             1,
             0,
@@ -282,7 +282,7 @@
             // 
             // numRaTime
             // 
-            this.numRaTime.DecimalPlaces = 1;
+            this.numRaTime.DecimalPlaces = 2;
             this.numRaTime.Increment = new decimal(new int[] {
             1,
             0,
@@ -320,7 +320,7 @@
             // 
             // numDecRate
             // 
-            this.numDecRate.DecimalPlaces = 1;
+            this.numDecRate.DecimalPlaces = 2;
             this.numDecRate.Location = new System.Drawing.Point(79, 55);
             this.numDecRate.Maximum = new decimal(new int[] {
             10,
@@ -343,7 +343,7 @@
             // 
             // numRaRrate
             // 
-            this.numRaRrate.DecimalPlaces = 1;
+            this.numRaRrate.DecimalPlaces = 2;
             this.numRaRrate.Location = new System.Drawing.Point(79, 33);
             this.numRaRrate.Maximum = new decimal(new int[] {
             10,

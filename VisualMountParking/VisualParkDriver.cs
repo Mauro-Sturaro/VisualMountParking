@@ -188,10 +188,10 @@ namespace VisualMountParking
             var apRA = _Config.AutoParkAR;
             var apDec = _Config.AutoParkDec;
 
-            var raRate = _Config.MoveRaRate;// * _Config.FastRateMultiplier;
-            var raTime = _Config.MoveRaTime * 10;
-            var decRate = _Config.MoveDecRate;// * _Config.FastRateMultiplier;
-            var decTime = _Config.MoveDecTime * 10;
+            var raRate = _Config.MoveRaRate;
+            var raTime = _Config.MoveRaTime * _Config.FastTimeMultiplier;
+            var decRate = _Config.MoveDecRate;
+            var decTime = _Config.MoveDecTime * _Config.FastTimeMultiplier;
 
             double raFraction = 1;
             double decFraction = 1;
@@ -200,9 +200,19 @@ namespace VisualMountParking
             bool fast = true;
 
             if (apRA.ZoneId > 0)
+            {
+                // Calc initial sense of the vector movement
+                var raMarker = await GetMarkerRelativePositionAsync(apRA.ZoneId);
+                var reverse = (raMarker.Item1 < 0);
+                if (apRA.Direction == ShiftDirection.X)
+                    reverse = !reverse;
+                if (reverse)
+                    raRate *= -1;
+
                 while (raTime > 0.2)
                 {
                     Debug.WriteLine($"RA fraction is {raFraction}");
+                    // do the movement
                     raFraction = await MinimizeDistance(apRA.ZoneId, TelescopeAxes.axisPrimary, raRate, raTime, cancellationToken);
                     if (!IsValidNonZero(raFraction))
                         break;
@@ -219,8 +229,16 @@ namespace VisualMountParking
                     //}
 
                 }
-
+            }
             if (apDec.ZoneId > 0)
+            {
+                // Calc initial sense of the vector movement
+                var decMarker = await GetMarkerRelativePositionAsync(apDec.ZoneId);
+                var reverse = (decMarker.Item1 < 0);
+                if (apDec.Direction == ShiftDirection.X)
+                    reverse = !reverse;
+                if (reverse)
+                    decRate *= -1;
                 while (decTime > 0.2)
                 {
                     Debug.WriteLine($"DEC fraction is {decFraction}");
@@ -231,7 +249,7 @@ namespace VisualMountParking
                     decRate = decRate * Math.Sign(decFraction);
                     decTime = decTime * Math.Abs(decFraction);
                 }
-
+            }
 
             Debug.WriteLine($"Fractions are {raFraction},{decFraction} => completed");
             return true;
@@ -282,12 +300,12 @@ namespace VisualMountParking
 
             Debug.WriteLine($"Spostamento ottenuto {Ax - Bx},{Ay - By}. Distanza rimasta = {curDistance} next={nextMove}");
 
-            if (curDistance < 1)
+            if (curDistance < 0.5)
             {
                 Debug.WriteLine("Distanza minore di 1");
                 return 0;
             }
-            if (curDistance < 10)
+            if (curDistance < 8)
                 return nextMove;
             if (curDistance < 20)
                 return nextMove * 0.8;
