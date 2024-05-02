@@ -37,14 +37,14 @@ namespace VisualMountParking
 		#region Telescope setting
 		public string TelescopeDriver { get; set; }
 
-		public decimal MoveRaRate { get; set; }
-		public decimal MoveDecRate { get; set; }
+		public double MoveRaRate { get; set; }
+		public double MoveDecRate { get; set; }
 
-		public decimal MoveRaTime { get; set; }
-		public decimal MoveDecTime { get; set; }
+		public double MoveRaTime { get; set; }
+		public double MoveDecTime { get; set; }
 
-		public decimal FastTimeMultiplier { get; set; }
-		public decimal FastRateMultiplier { get; set; }
+		public double FastTimeMultiplier { get; set; }
+		public double FastRateMultiplier { get; set; }
 		#endregion
 
 		#region Private Methods

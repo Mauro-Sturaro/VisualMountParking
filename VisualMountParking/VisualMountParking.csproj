@@ -104,6 +104,7 @@
     <Compile Include="Enums.cs" />
     <Compile Include="Markers\ArucoFind.cs" />
     <Compile Include="Markers\ArucoUtilities.cs" />
+    <Compile Include="MyTelescope.cs" />
     <Compile Include="VisualParkDriver.cs" />
     <Compile Include="WebUtils.cs" />
     <Compile Include="PatternVerifier.cs" />

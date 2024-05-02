@@ -68,14 +68,14 @@ namespace VisualMountParking
             // Telescope
             txtTelescopeDriver.Text = Config.TelescopeDriver;
 
-            numRaRrate.Value = Config.MoveRaRate;
-            numDecRate.Value = Config.MoveDecRate;
+            numRaRrate.Value = (decimal) Config.MoveRaRate;
+            numDecRate.Value = (decimal)Config.MoveDecRate;
 
-            numRaTime.Value = Config.MoveRaTime;
-            numDecTime.Value = Config.MoveDecTime;
+            numRaTime.Value = (decimal)Config.MoveRaTime;
+            numDecTime.Value = (decimal)Config.MoveDecTime;
 
-            numFastSpeed.Value = Config.FastRateMultiplier;
-            numFastTime.Value = Config.FastTimeMultiplier;
+            numFastSpeed.Value = (decimal)Config.FastRateMultiplier;
+            numFastTime.Value = (decimal)Config.FastTimeMultiplier;
 
             // Image
             // dropdown items 
@@ -98,12 +98,12 @@ namespace VisualMountParking
         }
         private void CopyFormToConfig()
         {
-            Config.MoveRaRate = numRaRrate.Value;
-            Config.MoveDecRate = numDecRate.Value;
-            Config.MoveRaTime = numRaTime.Value;
-            Config.MoveDecTime = numDecTime.Value;
-            Config.FastRateMultiplier = numFastSpeed.Value;
-            Config.FastTimeMultiplier = numFastTime.Value;
+            Config.MoveRaRate = (double)numRaRrate.Value;
+            Config.MoveDecRate = (double)numDecRate.Value;
+            Config.MoveRaTime = (double)numRaTime.Value;
+            Config.MoveDecTime = (double)numDecTime.Value;
+            Config.FastRateMultiplier =  (double)numFastSpeed.Value;
+            Config.FastTimeMultiplier = (double)numFastTime.Value;
 
             // AutoPark			
             Config.AutoParkAR.ZoneId = (int)numMarkerIdAr.Value;

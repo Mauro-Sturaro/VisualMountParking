@@ -1,6 +1,4 @@
-﻿using ASCOM.DeviceInterface;
-using Emgu.CV.Reg;
-using FlashCap;
+﻿using FlashCap;
 using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;

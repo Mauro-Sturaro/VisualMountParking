@@ -1,5 +1,4 @@
 ﻿using ASCOM.DeviceInterface;
-using ASCOM.DriverAccess;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -8,17 +7,22 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Diagnostics;
 using VisualMountParking.Camera;
+using Emgu.CV;
+using System.Windows.Forms;
+using FlashCap.Utilities;
 
 namespace VisualMountParking
 {
     public class VisualParkDriver
     {
-        Telescope _Telescope;
-        readonly PatternVerifier _PatternVerifier = new PatternVerifier();
-        Config _Config;
-        ICamera _Camera;
+        private MyTelescope _MyTelescope;
+        private readonly PatternVerifier _PatternVerifier = new PatternVerifier();
+        private Config _Config;
+        private ICamera _Camera;
 
         public Bitmap CurrentImage { get; private set; }
+
+        public Func<Bitmap, Bitmap> AdjustImage { get; set; }
 
         public void Initialize(Config config)
         {
@@ -34,110 +38,58 @@ namespace VisualMountParking
             {
                 _Camera = CameraFactory.Instance.GetCamera(config.CameraName);
                 _Camera.Initialize(config.CameraSettings);
-            } catch
+            }
+            catch
             {
                 _Camera = CameraFactory.Instance.GetCamera("None");
             }
         }
 
+        #region Telescope actions
         public void ConnectTelescope()
         {
-            DisconnectTelescope();
-            if (!string.IsNullOrWhiteSpace(_Config.TelescopeDriver))
-            {
-                _Telescope = new Telescope(_Config.TelescopeDriver);
-                _Telescope.Connected = true;
-            }
+            _MyTelescope?.Disconnect();
+            _MyTelescope = new MyTelescope();
+            _MyTelescope.Initialize(_Config.TelescopeDriver);
         }
 
         public void DisconnectTelescope()
         {
-            if (_Telescope != null)
-            {
-                _Telescope.Connected = false;
-                _Telescope.Dispose();
-                _Telescope = null;
-            }
+            _MyTelescope?.Disconnect();
         }
 
         public void StopTelescope()
         {
             if (!IsTelescopeConnected)
                 return;
-            _Telescope.AbortSlew();
-            if (_Telescope.CanSetTracking)
-                _Telescope.Tracking = false;
+            _MyTelescope.StopAnyMovement();
         }
 
         public async Task ParkTelescope()
         {
             if (!IsTelescopeConnected)
                 return;
-            bool badTrackingStatus = _Telescope.CanSetTracking && _Telescope.Tracking;
-            if (_Telescope.AtPark && !badTrackingStatus)
-                return;
-
-            if (_Telescope.AtPark) // is at park but Tracking is on, clean up tis strange situation
-            {
-                _Telescope.Unpark();
-            }
-            _Telescope.Tracking = false; // valid only when unparked
-            await Task.Run(() =>
-            {
-                Debug.WriteLine($"[{DateTime.Now}]Start Park command");
-                _Telescope.Park();
-                Debug.WriteLine($"[{DateTime.Now}]End Park command");
-            });
+            await _MyTelescope.ParkTelescope();
 
         }
         public void UnParkTelescope()
         {
-            if (!IsTelescopeConnected || !_Telescope.AtPark)
+            if (!IsTelescopeConnected)
                 return;
 
-            _Telescope.Unpark();
-            _Telescope.Tracking = false;
+            _MyTelescope.UnParkTelescope();
         }
 
-        public bool IsTelescopeConnected => _Telescope != null && _Telescope.Connected;
+        public bool IsTelescopeConnected => _MyTelescope != null && _MyTelescope.IsTelescopeConnected;
 
-        public async Task RotateAxis(TelescopeAxes axis, decimal rate, decimal time, CancellationToken cancellationToken)
-        {
-            if (!IsTelescopeConnected)
-                throw new InvalidOperationException("Mount not connected");
+        public Task RotateAxisAsync(TelescopeAxes axis, double rate, double time, CancellationToken cancellationToken) => _MyTelescope.RotateAxisAsync(axis, rate, time, cancellationToken);
 
-            if (_Telescope.AtPark)
-                throw new InvalidOperationException("Mount is At Park");
 
-            cancellationToken.ThrowIfCancellationRequested();
+        public TelescopeState TelescopeState => _MyTelescope.TelescopeState;
 
-            var delay = (int)(time * 100);
-            _Telescope.MoveAxis(axis, (double)rate);
-            await Task.Delay(delay, cancellationToken);
-            _Telescope.MoveAxis(axis, 0);
-        }
-
-        public TelescopeState TelescopeState
-        {
-            get
-            {
-                if (!IsTelescopeConnected)
-                    return TelescopeState.Disconnected;
-                if (_Telescope.AtPark)
-                    return TelescopeState.AtPark;
-                if (_Telescope.Slewing || _Telescope.Tracking)
-                    return TelescopeState.Moving;
-                return TelescopeState.Quiet;
-            }
-        }
+        #endregion telescope
 
         public Action<string> Logger { get; set; }
-
-        /// <summary>
-        /// Regola la luminosità, 50 = unchange, valori da 0 a 100
-        /// </summary>
-        public float Brighness { get; set; } = 50;
-        public float Contrast { get; set; } = 50;
 
         private void LogWriteLine(string message)
         {
@@ -147,79 +99,7 @@ namespace VisualMountParking
             Logger("\r\n");
         }
 
-        private async Task<bool> AutoPark(TelescopeAxes axis, decimal moveRate, decimal moveTime, int zoneId, ShiftDirection direction, CancellationToken cancellationToken)
-        {
-            if (!IsTelescopeConnected)
-                return false;
-            //
-            //	First movement: proportional to current position delta
-            //
-
-            var delta = await GetZoneDelta(zoneId, direction);
-            if (!delta.HasValue)
-            {
-                LogWriteLine("GetZoneDelta failed!");
-                return false;
-            }
-
-            LogWriteLine($"delta={delta}");
-            int nochangeRetry = 3;
-
-            while (!cancellationToken.IsCancellationRequested && delta != 0)
-            {
-                //cancellationToken.ThrowIfCancellationRequested();
-                var pn = Math.Sign(delta.Value);
-
-                decimal rate = -moveRate * pn;
-                decimal time = moveTime * Math.Abs(delta.Value);
-                LogWriteLine($"RotateAxis({axis},{rate},{time})");
-                await RotateAxis(axis, rate, time, cancellationToken);
-                await UpdateImageAndPosition();
-
-                var newDelta = await GetZoneDelta(zoneId, direction);
-                if (!newDelta.HasValue)
-                {
-                    LogWriteLine("GetZoneDelta(new) failed!");
-                    return false;
-                }
-
-                // check any change
-                if (newDelta == delta)
-                {
-                    nochangeRetry--;
-                    if (nochangeRetry > 0)
-                    {
-                        LogWriteLine("No change -> retry");
-                        continue;
-                    }
-                    else
-                    {
-                        LogWriteLine("Failed after retry");
-                        return false;
-                    }
-                }
-                else
-                    nochangeRetry = 3;
-
-                // check progress
-                var success = Math.Sign(delta.Value) > 0 ? newDelta < delta : newDelta > delta;
-                if (!success)
-                {
-                    LogWriteLine($"Failed: old delta={delta}, newDelta={newDelta}");
-                    return false;
-                }
-                LogWriteLine($"Step Ok: old delta={delta}, newDelta={newDelta}");
-                delta = newDelta;
-            }
-            if (delta == 0)
-            {
-                LogWriteLine("Finish");
-                return true;
-            }
-            return false;
-        }
-
-        private async Task<int?> GetZoneDelta(int zoneId, ShiftDirection direction)
+        private async Task<int?> GetZoneDeltaAsync(int zoneId, ShiftDirection direction)
         {
             await UpdateImageAndPosition();
             var zone = _PatternVerifier.ZoneMatchList.Find((z) => z.ZoneId == zoneId);
@@ -227,6 +107,24 @@ namespace VisualMountParking
 
             var delta = direction == ShiftDirection.X ? zone.Target.X - zone.Source.X : zone.Target.Y - zone.Source.Y;
             return delta;
+        }
+
+        /// <summary>
+        /// Get Marker position relative to target
+        /// </summary>
+        private async Task<(double, double)> GetMarkerRelativePositionAsync(int markerId)
+        {
+            await UpdateImageAndPosition();
+            var zone = _PatternVerifier.ZoneMatchList.Find((z) => z.ZoneId == markerId);
+            if (zone == null || zone.Target == null)
+                throw new Exception($"Marker {markerId} not found.");
+
+            var x = zone.Target.X - zone.Source.X;
+            var y = zone.Target.Y - zone.Source.Y;
+            (double, double) res = (x, y);
+            return res;
+            //var distance = Math.Sqrt(Math.Pow(zone.Target.X - zone.Source.X, 2) + Math.Pow(zone.Target.Y - zone.Source.Y, 2));
+            //return distance;
         }
 
         public async Task UpdateImageAndPosition()
@@ -241,12 +139,13 @@ namespace VisualMountParking
         public async Task<bool> LoadNewImage()
         {
             var image = await _Camera.LoadImageAsync();
-            if (Brighness != 50 || Contrast != 50)
-                image = AdjustBrightness(image, Brighness / 50, Contrast / 50); /* range 0-2 */
+
+            if (AdjustImage != null)
+                image = AdjustImage(image);
 
             _PatternVerifier.NewImage?.Dispose();
             _PatternVerifier.NewImage = new Bitmap(image);
-//            CurrentImage?.Dispose();
+            //            CurrentImage?.Dispose();
             CurrentImage = new Bitmap(image);
             ////-- per debug
             //CurrentImage = _PatternVerifier.GetDetectionImage();
@@ -259,30 +158,6 @@ namespace VisualMountParking
         public async Task CheckPosition()
         {
             await Task.Run(_PatternVerifier.SearchMatch);
-        }
-
-        public async Task<bool> DoVisualPark(CancellationToken cancellationToken)
-        {
-            // Questi devono stare nei settings
-            var apRA = _Config.AutoParkAR;
-            var apDec = _Config.AutoParkDec;
-            //
-            bool success;
-            int retry = 3;
-            do
-            {
-                success = await AutoPark(TelescopeAxes.axisPrimary, _Config.MoveRaRate, _Config.MoveRaTime, apRA.ZoneId, apRA.Direction, cancellationToken);
-                if (!success)
-                    await Task.Delay(1000);
-            } while (!success && retry-- > 0);
-            retry = 3;
-            do
-            {
-                success = await AutoPark(TelescopeAxes.axisSecondary, _Config.MoveDecRate, _Config.MoveDecTime, apDec.ZoneId, apDec.Direction, cancellationToken);
-                if (!success)
-                    await Task.Delay(1000);
-            } while (!success && retry-- > 0);
-            return success;
         }
 
         internal IList<Zone> GetReferenceZone()
@@ -306,50 +181,120 @@ namespace VisualMountParking
         }
 
 
-
-        private Bitmap AdjustBrightness(Image image, float brightness, float contrast)
+        //------------------
+        public async Task<bool> DoVisualPark(CancellationToken cancellationToken)
         {
+            // Questi devono stare nei settings
+            var apRA = _Config.AutoParkAR;
+            var apDec = _Config.AutoParkDec;
 
-            if (image == null)
-                throw new ArgumentNullException("image");
-            if (brightness < 0 || brightness > 2)
-                throw new ArgumentOutOfRangeException("brightness must be between 0 and 2");
-            //------------------
+            var raRate = _Config.MoveRaRate;// * _Config.FastRateMultiplier;
+            var raTime = _Config.MoveRaTime * 10;
+            var decRate = _Config.MoveDecRate;// * _Config.FastRateMultiplier;
+            var decTime = _Config.MoveDecTime * 10;
 
-            float b = brightness - 1;
-            float c = contrast;
-            float t = (1.0f - c) / 2.0f;
+            double raFraction = 1;
+            double decFraction = 1;
 
-            ColorMatrix cm = new ColorMatrix(new float[][]
+
+            bool fast = true;
+
+            if (apRA.ZoneId > 0)
+                while (raTime > 0.2)
                 {
-                    new float[] {c, 0, 0, 0, 0},
-                    new float[] {0, c, 0, 0, 0},
-                    new float[] {0, 0, c, 0, 0},
-                    new float[] {0, 0, 0, 1, 0},
-                    new float[] {t+b, t+b, t+b, 0, 1},
-                });
-            //------------------
-            ImageAttributes attributes = new ImageAttributes();
-            attributes.SetColorMatrix(cm);
+                    Debug.WriteLine($"RA fraction is {raFraction}");
+                    raFraction = await MinimizeDistance(apRA.ZoneId, TelescopeAxes.axisPrimary, raRate, raTime, cancellationToken);
+                    if (!IsValidNonZero(raFraction))
+                        break;
 
-            // Draw the image onto the new bitmap while applying the new ColorMatrix.
-            Point[] points =
-            {
-                new Point(0, 0),
-                new Point(image.Width, 0),
-                new Point(0, image.Height),
-            };
-            Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
+                    raRate = raRate * Math.Sign(raFraction);
+                    raTime = raTime * Math.Abs(raFraction);
 
-            // Make the result bitmap.
-            Bitmap bm = new Bitmap(image.Width, image.Height);
-            using (Graphics gr = Graphics.FromImage(bm))
+                    //if (fast && raTime < 100)
+                    //{
+                    //    raRate /= 2;
+                    //    raTime *= 2;
+                    //    fast = false;
+                    //    Debug.WriteLine("--> slow down!");
+                    //}
+
+                }
+
+            if (apDec.ZoneId > 0)
+                while (decTime > 0.2)
+                {
+                    Debug.WriteLine($"DEC fraction is {decFraction}");
+                    decFraction = await MinimizeDistance(apDec.ZoneId, TelescopeAxes.axisSecondary, decRate, decTime, cancellationToken);
+                    if (!IsValidNonZero(decFraction))
+                        break;
+
+                    decRate = decRate * Math.Sign(decFraction);
+                    decTime = decTime * Math.Abs(decFraction);
+                }
+
+
+            Debug.WriteLine($"Fractions are {raFraction},{decFraction} => completed");
+            return true;
+
+        }
+
+        private bool IsValidNonZero(double n)
+        {
+            if (n == 0 || double.IsNaN(n) || double.IsInfinity(n))
+                return false;
+            return true;
+        }
+
+        private async Task<double> MinimizeDistance(int markerId, TelescopeAxes axis, double moveRate, double moveTime, CancellationToken cancellationToken)
+        {
+            var A = await GetMarkerRelativePositionAsync(markerId);
+            var Ax = A.Item1;
+            var Ay = A.Item2;
+            var curDistance = Math.Sqrt(Math.Pow(Ax, 2) + Math.Pow(Ay, 2));
+            if (curDistance < 1)
+                return 0;
+
+            await _MyTelescope.RotateAxisAsync(axis, moveRate, moveTime, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            var B = await GetMarkerRelativePositionAsync(markerId);
+            var Bx = B.Item1;
+            var By = B.Item2;
+
+            /*  ho due punti in un sistema cartesiano centrato sulla destinazione
+                stanno su una retta y = m*x+q
+                il punto di quella retta più vicino all'origine è l'intersezione con la retta perpendicolare di equazione y=-m*x
+                Questo è il punto che voglio raggiungere continuando a muovermi nella direzione attuale (il varso viene calcolato).
+            */
+
+            if (Ax == Bx)
             {
-                gr.DrawImage(image, points, rect, GraphicsUnit.Pixel, attributes);
+                Debug.WriteLine($"Spostamento nullo sull'asse x -> nessun aggiustamento");
             }
 
-            // Return the result.
-            return bm;
+            var m = (Ay - By) / (Ax - Bx);
+            var q = Ay - m * Ax;
+
+            var Cx = -q / (2 * m);
+
+            var nextMove = (Bx - Cx) / (Ax - Bx); // frazione del movimento precedente, se positivo va nello stesso verso, se negativo in verso opposto
+
+            curDistance = Math.Sqrt(Math.Pow(Bx, 2) + Math.Pow(By, 2));
+
+            Debug.WriteLine($"Spostamento ottenuto {Ax - Bx},{Ay - By}. Distanza rimasta = {curDistance} next={nextMove}");
+
+            if (curDistance < 1)
+            {
+                Debug.WriteLine("Distanza minore di 1");
+                return 0;
+            }
+            if (curDistance < 10)
+                return nextMove;
+            if (curDistance < 20)
+                return nextMove * 0.8;
+            return nextMove * 0.5;
         }
+
     }
+
+
 }

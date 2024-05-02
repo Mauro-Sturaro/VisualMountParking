@@ -1,9 +1,9 @@
 ﻿using ASCOM.DeviceInterface;
-using ASCOM.DriverAccess;
 using System;
 using System.Diagnostics;
+using System.Diagnostics.Contracts;
 using System.Drawing;
-using System.Numerics;
+using System.Drawing.Imaging;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,11 +17,8 @@ namespace VisualMountParking
 
     public partial class MainForm : Form
     {
-        bool _MouseDragging = false;
-        Point _SelectionFirstPoint;
-        Point _SelectionLastPoint;
         readonly WebUtils _WebUtils = new WebUtils();
-        readonly VisualParkDriver _vpDriver = new VisualParkDriver();
+        private VisualParkDriver _vpDriver;
 
         public MainForm()
         {
@@ -46,6 +43,9 @@ namespace VisualMountParking
             ShowRefImage = false;
             MainForm_Resize(sender, e);
             config = Config.Load();
+
+            _vpDriver = new VisualParkDriver();
+            _vpDriver.AdjustImage = AdjustImage;
             _vpDriver.Initialize(config);
 
             UpdateMovementButtons();
@@ -57,6 +57,67 @@ namespace VisualMountParking
             await _vpDriver.UpdateImageAndPosition();
             timerImage.Enabled = !chkFreezeImage.Checked;
         }
+
+        private Bitmap AdjustImage(Bitmap image)
+        {
+            var brighness = tbLum.Value;
+            var contrast = tbContrast.Value;
+
+            /// Regola la luminosità, 50 = unchange, valori da 0 a 100
+            if (brighness != 50 || contrast != 50)
+            {
+                var newImage = AdjustBrightness(image, brighness / 50, contrast / 50); /* range 0-2 */
+                image.Dispose();
+                return newImage;
+            }
+            return image;
+        }
+
+        private Bitmap AdjustBrightness(Image image, float brightness, float contrast)
+        {
+
+            if (image == null)
+                throw new ArgumentNullException("image");
+            if (brightness < 0 || brightness > 2)
+                throw new ArgumentOutOfRangeException("brightness must be between 0 and 2");
+            //------------------
+
+            float b = brightness - 1;
+            float c = contrast;
+            float t = (1.0f - c) / 2.0f;
+
+            ColorMatrix cm = new ColorMatrix(new float[][]
+                {
+                    new float[] {c, 0, 0, 0, 0},
+                    new float[] {0, c, 0, 0, 0},
+                    new float[] {0, 0, c, 0, 0},
+                    new float[] {0, 0, 0, 1, 0},
+                    new float[] {t+b, t+b, t+b, 0, 1},
+                });
+            //------------------
+            ImageAttributes attributes = new ImageAttributes();
+            attributes.SetColorMatrix(cm);
+
+            // Draw the image onto the new bitmap while applying the new ColorMatrix.
+            Point[] points =
+            {
+                new Point(0, 0),
+                new Point(image.Width, 0),
+                new Point(0, image.Height),
+            };
+            Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
+
+            // Make the result bitmap.
+            Bitmap bm = new Bitmap(image.Width, image.Height);
+            using (Graphics gr = Graphics.FromImage(bm))
+            {
+                gr.DrawImage(image, points, rect, GraphicsUnit.Pixel, attributes);
+            }
+
+            // Return the result.
+            return bm;
+        }
+
 
         private void vpDriver_ImageUpdated(object sender, EventArgs e)
         {
@@ -202,13 +263,7 @@ namespace VisualMountParking
 
                 var msg = $"id={tp.Id}";
                 DrawStringWithBackground(g, x + 2, y + 2, msg);
-            }
-            if (_MouseDragging)
-            {
-                SortPoint(_SelectionFirstPoint, _SelectionLastPoint, out var startPoint, out var endPoint);
-                g.DrawRectangle(new Pen(Color.Coral, 1), startPoint.X, startPoint.Y, endPoint.X - startPoint.X, endPoint.Y - startPoint.Y);
-
-            }
+            }            
         }
 
         private static void DrawMarker(Graphics g, Pen pen, int x, int y)
@@ -400,12 +455,12 @@ namespace VisualMountParking
             await RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecRate * config.FastRateMultiplier, config.MoveDecTime * config.FastTimeMultiplier);
         }
 
-        private async Task RotateAxis(TelescopeAxes axis, decimal rate, decimal time)
+        private async Task RotateAxis(TelescopeAxes axis, double rate, double time)
         {
             _CancellationTokenSource = new CancellationTokenSource();
             try
             {
-                await _vpDriver.RotateAxis(axis, rate, time, _CancellationTokenSource.Token);
+                await _vpDriver.RotateAxisAsync(axis, rate, time, _CancellationTokenSource.Token);
             }
             catch (Exception ex)
             {
@@ -512,17 +567,17 @@ namespace VisualMountParking
 
         private async void btAutoPark_Click(object sender, EventArgs e)
         {
-            // ensure log window is open
-            if (log != null)
-            {
-                log.Dispose();
-                log = null;
-            }
+            //// ensure log window is open
+            //if (log != null)
+            //{
+            //    log.Dispose();
+            //    log = null;
+            //}
 
-            log = new LogForm();
-            log.Show();
-            log.Left = this.Right;
-            log.Top = this.Top;
+            //log = new LogForm();
+            //log.Show();
+            //log.Left = this.Right;
+            //log.Top = this.Top;
 
             btAutoPark.Enabled = false;
             _CancellationTokenSource = new CancellationTokenSource();
@@ -540,20 +595,20 @@ namespace VisualMountParking
 
         private void LogWriter(string msg)
         {
-            log.Write(msg);
+            log?.Write(msg);
         }
 
         LogForm log;
 
         private async void tbLum_ValueChanged(object sender, EventArgs e)
         {
-            _vpDriver.Brighness = tbLum.Value;
+
             await _vpDriver.UpdateImageAndPosition();
         }
 
         private async void tbContrast_ValueChanged(object sender, EventArgs e)
         {
-            _vpDriver.Contrast = tbContrast.Value;
+ 
             await _vpDriver.UpdateImageAndPosition();
         }
 
