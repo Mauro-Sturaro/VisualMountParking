@@ -1,4 +1,5 @@
 ﻿using ASCOM.DeviceInterface;
+using Emgu.CV.Ocl;
 using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
@@ -18,7 +19,9 @@ namespace VisualMountParking
     public partial class MainForm : Form
     {
         readonly WebUtils _WebUtils = new WebUtils();
-        private VisualParkDriver _vpDriver;
+        private AutoPark _vpDriver;
+        private MarkerMatchEngine _markersFinder;
+        private MyTelescope _MyTelescope;
 
         public MainForm()
         {
@@ -28,35 +31,31 @@ namespace VisualMountParking
 
         private Config config;
 
-        public bool ShowRefImage
-        {
-            get => chkShowRef.Checked;
-            set
-            {
-                chkShowRef.Checked = value;
-                MainForm_Resize(this, EventArgs.Empty);
-            }
-        }
-
         private async void MainForm_Load(object sender, EventArgs e)
         {
-            ShowRefImage = false;
-            MainForm_Resize(sender, e);
+            cmbImageToShow.SelectedIndex = 0;
+            cmbReferenceImage.SelectedIndex = 0;
+
             config = Config.Load();
 
-            _vpDriver = new VisualParkDriver();
+            _markersFinder = new MarkerMatchEngine(config.ReferenceImage1);
+
+            _MyTelescope?.Disconnect();
+            _MyTelescope = new MyTelescope();
+            _MyTelescope.Initialize(config.TelescopeDriver);
+
+            _vpDriver = new AutoPark();
             _vpDriver.AdjustImage = AdjustImage;
-            _vpDriver.Initialize(config);
+            _vpDriver.Initialize(config, _markersFinder, _MyTelescope);
 
             UpdateMovementButtons();
-            btCancel.BringToFront();
 
-            picReference.Image = config.ReferenceImage;
-            _vpDriver.ImageUpdated += vpDriver_ImageUpdated;
+            _vpDriver.ImageChanged += _vpDriver_ImageChanged;
 
             await _vpDriver.UpdateImageAndPosition();
             timerImage.Enabled = !chkFreezeImage.Checked;
         }
+
 
         private Bitmap AdjustImage(Bitmap image)
         {
@@ -118,13 +117,16 @@ namespace VisualMountParking
             return bm;
         }
 
-
-        private void vpDriver_ImageUpdated(object sender, EventArgs e)
+        private void _vpDriver_ImageChanged(object sender, ImageChangedEventArgs e)
         {
-            if (!ShowingOriginal)
+            if (_ImageToShow == ImageToShow.LiveTracking)
             {
-                picCurrent.Image?.Dispose();
-                picCurrent.Image = _vpDriver.CurrentImage;
+                picCurrent.Image = (Image)e.NewImage.Clone(); //ToDo evitare la copia
+            }
+            else if (_ImageToShow == ImageToShow.LiveAllMarkers)
+            {
+                var newImage = (Bitmap)e.NewImage.Clone();
+                picCurrent.Image = (Image)_markersFinder.ShowAllMarkers(newImage).Clone();
             }
         }
 
@@ -132,19 +134,10 @@ namespace VisualMountParking
         {
             await _vpDriver.UpdateImageAndPosition();
             picCurrent.Invalidate();
-        }
-
-        private void btSetRefImage_Click(object sender, EventArgs e)
-        {
-            config.ReferenceImage = _vpDriver.CurrentImage;
-            _vpDriver.Initialize(config);
-            picReference.Image = _vpDriver.CurrentImage;
-        }
-
-        private static void SortPoint(Point point1, Point point2, out Point topLeft, out Point bottomRight)
-        {
-            topLeft = new Point(Math.Min(point1.X, point2.X), Math.Min(point1.Y, point2.Y));
-            bottomRight = new Point(Math.Max(point1.X, point2.X), Math.Max(point1.Y, point2.Y));
+            if(_vpDriver.InRange.HasValue)
+             pnlImageBorder.BackColor = _vpDriver.InRange.Value ? Color.DarkSeaGreen:Color.DarkSalmon;
+            else
+                pnlImageBorder.BackColor = System.Drawing.SystemColors.Control;
         }
 
         private void GetStretch(PictureBox pb, out double stretchX, out double stretchY, out int shiftX, out int shiftY)
@@ -187,8 +180,17 @@ namespace VisualMountParking
                 return;
             if (picCurrent.Image == null)
                 return;
-            GetStretch((PictureBox)sender, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
-            var g = e.Graphics;
+
+            if (_ImageToShow == ImageToShow.LiveAllMarkers)
+                return;
+
+            DrawOverlay((PictureBox)sender, e.Graphics);
+        }
+
+        private void DrawOverlay(PictureBox sender, Graphics g)
+        {
+            GetStretch(sender, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
+
             foreach (var zoneMatch in _vpDriver.GetZoneMatch())
             {
                 var sp = zoneMatch.Source;
@@ -247,25 +249,6 @@ namespace VisualMountParking
             }
         }
 
-        private void picReference_Paint(object sender, PaintEventArgs e)
-        {
-            if (picReference.Image == null)
-                return;
-            GetStretch((PictureBox)sender, out var stretchX, out var stretchY, out var shiftX, out var shiftY);
-            var g = e.Graphics;
-            foreach (var tp in _vpDriver.GetReferenceZone())
-            {
-                int x = (int)(tp.X * stretchX) + shiftX;
-                int y = (int)(tp.Y * stretchY) + shiftY;
-                //g.DrawRectangle(bluePen, x, y, (int)(tp.Width * stretchX), (int)(tp.Height * stretchY));
-                DrawMarker(g, penRef1, x, y);
-                DrawMarker(g, penRef2, x, y);
-
-                var msg = $"id={tp.Id}";
-                DrawStringWithBackground(g, x + 2, y + 2, msg);
-            }            
-        }
-
         private static void DrawMarker(Graphics g, Pen pen, int x, int y)
         {
             var delta = 5;
@@ -288,53 +271,19 @@ namespace VisualMountParking
             g.FillRectangle(txtBackground, txtX, txtY, txtSize.Width, txtSize.Height);
             g.DrawString(msg, drawFont, drawBrush, txtX, txtY);
         }
-        private void MainForm_Resize(object sender, EventArgs e)
-        {
-            var dX = picCurrent.Left;
-            var top = picCurrent.Top;
-            var height = ClientSize.Height - top - dX;
-
-            int width;
-            if (ShowRefImage)
-                width = (ClientSize.Width - dX * 3) / 2;
-            else
-                width = ClientSize.Width - dX * 2;
-
-            picReference.Top = picCurrent.Top = top;
-            picReference.Width = picCurrent.Width = width;
-            picReference.Height = picCurrent.Height = height;
-            picReference.Left = width + dX * 2;
-            if (ShowRefImage)
-            {
-                picReference.Visible = true;
-            }
-            else
-            {
-                picReference.Visible = false;
-            }
-        }
 
         private void chkImageSize_CheckedChanged(object sender, EventArgs e)
         {
             if (chkImageSize.Checked)
             {
-                picReference.SizeMode = PictureBoxSizeMode.Zoom;
                 picCurrent.SizeMode = PictureBoxSizeMode.Zoom;
             }
             else
             {
-                picReference.SizeMode = PictureBoxSizeMode.Normal;
                 picCurrent.SizeMode = PictureBoxSizeMode.Normal;
             }
-            picReference.Invalidate();
             picCurrent.Invalidate();
 
-        }
-
-        private void ReplaceImage(Image newImage)
-        {
-            picReference.Image?.Dispose();
-            picReference.Image = newImage;
         }
 
         private void btSettings_Click(object sender, EventArgs e)
@@ -346,8 +295,16 @@ namespace VisualMountParking
                 if (f.ShowDialog(this) == DialogResult.OK)
                 {
                     config = f.Config;
-                    _vpDriver.Initialize(config);
-                    picReference.Image = config.ReferenceImage;
+                    if (cmbReferenceImage.SelectedIndex == 0)
+                        _markersFinder = new MarkerMatchEngine(config.ReferenceImage1);
+                    else
+                        _markersFinder = new MarkerMatchEngine(config.ReferenceImage1);
+
+                    _MyTelescope?.Disconnect();
+                    _MyTelescope = new MyTelescope();
+                    _MyTelescope.Initialize(config.TelescopeDriver);
+
+                    _vpDriver.Initialize(config, _markersFinder, _MyTelescope);
                 }
             }
         }
@@ -355,14 +312,21 @@ namespace VisualMountParking
         bool ShowingOriginal = false;
         private void picCurrent_MouseDown(object sender, MouseEventArgs e)
         {
-            ShowingOriginal = true;
-            picCurrent.Image = config.ReferenceImage;
+            if (cmbReferenceImage.SelectedIndex == 0)
+            {
+                _ImageToShow = ImageToShow.Reference1;
+                picCurrent.Image = config.ReferenceImage1;
+            }
+            else
+            {
+                _ImageToShow = ImageToShow.Reference2;
+                picCurrent.Image = config.ReferenceImage2;
+            }
         }
 
         private void picCurrent_MouseUp(object sender, MouseEventArgs e)
         {
-            picCurrent.Image = _vpDriver.CurrentImage;
-            ShowingOriginal = false;
+            cmbImageToShow_SelectedIndexChanged(null, null);
         }
 
         private async void btLightON_ClickAsync(object sender, EventArgs e)
@@ -386,7 +350,7 @@ namespace VisualMountParking
         {
             if (config.LightOffCommand == null || string.IsNullOrWhiteSpace(config.LightOffCommand.Uri))
                 return;
-            btLightON.Enabled = false;
+            btLightOFF.Enabled = false;
             try
             {
 
@@ -396,27 +360,14 @@ namespace VisualMountParking
             {
                 Debug.WriteLine(ex.Message);
             }
-            btLightON.Enabled = true;
-        }
-
-        private void chkShowRef_CheckedChanged(object sender, EventArgs e)
-        {
-            var deltaSize = picCurrent.Width + picCurrent.Left;
-            if (chkShowRef.Checked)
-            {
-                this.Width += deltaSize;
-            }
-            else
-            {
-                this.Width -= deltaSize;
-            }
-
+            btLightOFF.Enabled = true;
         }
 
         CancellationTokenSource _CancellationTokenSource = new CancellationTokenSource();
 
         private async void btRaLow2_Click(object sender, EventArgs e)
         {
+            
             await RotateAxis(TelescopeAxes.axisPrimary, -config.MoveRaRate * config.FastRateMultiplier, config.MoveRaTime * config.FastTimeMultiplier);
         }
 
@@ -460,8 +411,9 @@ namespace VisualMountParking
             _CancellationTokenSource = new CancellationTokenSource();
             try
             {
-                await _vpDriver.RotateAxisAsync(axis, rate, time, _CancellationTokenSource.Token);
+                await _MyTelescope.RotateAxisAsync(axis, rate, time, _CancellationTokenSource.Token);
             }
+            catch (TaskCanceledException) { }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -471,10 +423,10 @@ namespace VisualMountParking
 
         private void btConnect_Click(object sender, EventArgs e)
         {
-            if (_vpDriver.IsTelescopeConnected)
-                _vpDriver.DisconnectTelescope();
+            if (_MyTelescope.IsTelescopeConnected)
+                _MyTelescope.Disconnect();
             else
-                _vpDriver.ConnectTelescope();
+                _MyTelescope.Connect();
             UpdateMovementButtons();
         }
 
@@ -482,11 +434,11 @@ namespace VisualMountParking
         {
             bool canMove;
 
-            if (_vpDriver.IsTelescopeConnected)
+            if (_MyTelescope.IsTelescopeConnected)
             {
                 btConnect.Text = "Disconnect";
                 btPark.Enabled = true;
-                if (_vpDriver.TelescopeState == TelescopeState.AtPark)
+                if (_MyTelescope.TelescopeState == TelescopeState.AtPark)
                 {
                     btPark.Text = "Unpark";
                     canMove = false;
@@ -496,32 +448,39 @@ namespace VisualMountParking
                     btPark.Text = "Park";
                     canMove = true;
                 }
-                if (_vpDriver.TelescopeState == TelescopeState.Moving)
-                {
-                    btCancel.Visible = true;
-                }
-                else
-                {
-                    btCancel.Visible = false;
-                }
+                SetMoving(_MyTelescope.TelescopeState == TelescopeState.Moving);
             }
             else
             {
                 btConnect.Text = "Connect";
-                btCancel.Visible = false;
                 btPark.Enabled = false;
                 canMove = false;
             }
-            btAutoPark.Enabled = canMove;
+            btAutoPark.Enabled = btSTOP.Enabled = canMove;
             btRaHigh2.Enabled = btRaHigh.Enabled = btRaLow.Enabled = btRaLow2.Enabled = canMove;
             btDecHigh2.Enabled = btDecHigh.Enabled = btDecLow.Enabled = btDecLow2.Enabled = canMove;
         }
 
+        private void SetMoving(bool moving)
+        {
+            if (moving)
+            {
+                btSTOP.UseVisualStyleBackColor = false;
+                btSTOP.BackColor = Color.Tomato;
+            }
+            else
+            {
+                btSTOP.BackColor = System.Drawing.SystemColors.Control;
+                btSTOP.UseVisualStyleBackColor = true;
+            }
+
+        }
+
         private void btCancel_Click(object sender, EventArgs e)
         {
-            _vpDriver.StopTelescope(); // per sicurezza
+            _MyTelescope.StopAnyMovement(); // per sicurezza
             _CancellationTokenSource.Cancel();
-            _vpDriver.StopTelescope(); // per sicurezza
+            _MyTelescope.StopAnyMovement(); // per sicurezza
         }
 
         bool loading = false;
@@ -541,17 +500,17 @@ namespace VisualMountParking
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            _vpDriver.DisconnectTelescope();
+            _MyTelescope.Disconnect();
         }
 
         private async void btPark_Click(object sender, EventArgs e)
         {
             try
             {
-                if (_vpDriver.TelescopeState != TelescopeState.AtPark)
-                    await _vpDriver.ParkTelescope();
+                if (_MyTelescope.TelescopeState != TelescopeState.AtPark)
+                    await _MyTelescope.ParkTelescope();
                 else
-                    _vpDriver.UnParkTelescope();
+                    _MyTelescope.UnParkTelescope();
                 UpdateMovementButtons();
             }
             catch (Exception ex)
@@ -562,6 +521,7 @@ namespace VisualMountParking
 
         private void timerMountStat_Tick(object sender, EventArgs e)
         {
+            // aggiorna in polling i bottoni in funzione dello stato della montatura
             UpdateMovementButtons();
         }
 
@@ -584,7 +544,7 @@ namespace VisualMountParking
             try
             {
                 _vpDriver.Logger = LogWriter;
-                var success = await _vpDriver.DoVisualPark(_CancellationTokenSource.Token);
+                var success = await _vpDriver.SlaveToReference(_CancellationTokenSource.Token);
             }
             catch { }
             finally
@@ -608,37 +568,56 @@ namespace VisualMountParking
 
         private async void tbContrast_ValueChanged(object sender, EventArgs e)
         {
- 
+
             await _vpDriver.UpdateImageAndPosition();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void cmbImageToShow_SelectedIndexChanged(object sender, EventArgs e)
         {
-            chkFreezeImage.Checked = true;
-            chkFreezeImage_CheckedChanged(null, null);
-
-            //-----
-            var det = new ArucoDetector();
-            det.Initialize();
-            var image = picCurrent.Image as Bitmap;
-            if (image == null) return;
-            var dimg = det.ShowMarkers(image, true);
-            picCurrent.Image = dimg;
+            switch (cmbImageToShow.SelectedIndex)
+            {
+                case 0:
+                    _ImageToShow = ImageToShow.LiveTracking;
+                    break;
+                case 1:
+                    _ImageToShow = ImageToShow.LiveAllMarkers;
+                    break;
+                case 2:
+                    _ImageToShow = ImageToShow.Reference1;
+                    picCurrent.Image = config.ReferenceImage1;
+                    break;
+                case 3:
+                    _ImageToShow = ImageToShow.Reference2;
+                    picCurrent.Image = config.ReferenceImage2;
+                    break;
+            }
         }
 
-        private void btPrintCalibration_Click(object sender, EventArgs e)
+        ImageToShow _ImageToShow;
+
+        private enum ImageToShow
         {
-            ArucoUtilities.PrintCharucoBoard(@"C:\temp\ChArUco_Board.png");
-            ArucoUtilities.PrintArucoBoard(@"C:\temp\ArUco_Board.png");
+            LiveTracking,
+            LiveAllMarkers,
+            Reference1,
+            Reference2,
         }
 
-        private void btCalibration_Click(object sender, EventArgs e)
+        private void cmbReferenceImage_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var aruco = new ArucoDetector();
-            
-        }
+            if (config == null)
+                return;
 
+            if (cmbReferenceImage.SelectedIndex == 0)
+            {
+                _markersFinder = new MarkerMatchEngine(config.ReferenceImage1);
+            }
+            else
+            {
+                _markersFinder = new MarkerMatchEngine(config.ReferenceImage2);
+            }
+            _vpDriver.ChangeVerifier(_markersFinder);
+        }
     }
-
 
 }

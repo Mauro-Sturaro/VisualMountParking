@@ -1,6 +1,6 @@
 ﻿namespace VisualMountParking
 {
-	public class Zone
+	public class MarkerPoint
 	{
 		public int Id { get; set; }
 		public int X { get; set; }

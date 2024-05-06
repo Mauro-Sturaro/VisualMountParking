@@ -73,6 +73,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Camera\CmCamera.cs" />
+    <Compile Include="ImageChangedEventArgs.cs" />
+    <Compile Include="ImageDecorator.cs" />
     <Compile Include="Markers\ArucoDetector.cs" />
     <Compile Include="AsyncUtil.cs" />
     <Compile Include="AutoParkSetting.cs" />
@@ -105,9 +107,9 @@
     <Compile Include="Markers\ArucoFind.cs" />
     <Compile Include="Markers\ArucoUtilities.cs" />
     <Compile Include="MyTelescope.cs" />
-    <Compile Include="VisualParkDriver.cs" />
+    <Compile Include="AutoPark.cs" />
     <Compile Include="WebUtils.cs" />
-    <Compile Include="PatternVerifier.cs" />
+    <Compile Include="Markers\MarkerMatchEngine.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Config.cs" />
@@ -117,7 +119,7 @@
     <Compile Include="SettingsForm.Designer.cs">
       <DependentUpon>SettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Markers\Zone.cs" />
+    <Compile Include="Markers\MarkerPoint.cs" />
     <Compile Include="Markers\ZoneMatch.cs" />
     <EmbeddedResource Include="EditCommand.resx">
       <DependentUpon>EditCommand.cs</DependentUpon>

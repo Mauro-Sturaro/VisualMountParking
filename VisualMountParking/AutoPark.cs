@@ -4,19 +4,17 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Drawing;
-using System.Drawing.Imaging;
 using System.Diagnostics;
 using VisualMountParking.Camera;
-using Emgu.CV;
-using System.Windows.Forms;
-using FlashCap.Utilities;
+using VisualMountParking.Markers;
+using System.Linq;
 
 namespace VisualMountParking
 {
-    public class VisualParkDriver
+    internal class AutoPark
     {
         private MyTelescope _MyTelescope;
-        private readonly PatternVerifier _PatternVerifier = new PatternVerifier();
+        private MarkerMatchEngine _MarkerMatch = new MarkerMatchEngine(null);
         private Config _Config;
         private ICamera _Camera;
 
@@ -24,11 +22,17 @@ namespace VisualMountParking
 
         public Func<Bitmap, Bitmap> AdjustImage { get; set; }
 
-        public void Initialize(Config config)
+        public void Initialize(Config config, MarkerMatchEngine markerMatch, MyTelescope myTelescope)
         {
             _Config = config;
-            _PatternVerifier.Initialize(config);
+            _MarkerMatch = markerMatch;
+            _MyTelescope = myTelescope;
             ConnectCamera(config);
+        }
+
+        public void ChangeVerifier(MarkerMatchEngine marlerMatch)
+        {
+            _MarkerMatch = marlerMatch;
         }
 
         private void ConnectCamera(Config config)
@@ -45,50 +49,6 @@ namespace VisualMountParking
             }
         }
 
-        #region Telescope actions
-        public void ConnectTelescope()
-        {
-            _MyTelescope?.Disconnect();
-            _MyTelescope = new MyTelescope();
-            _MyTelescope.Initialize(_Config.TelescopeDriver);
-        }
-
-        public void DisconnectTelescope()
-        {
-            _MyTelescope?.Disconnect();
-        }
-
-        public void StopTelescope()
-        {
-            if (!IsTelescopeConnected)
-                return;
-            _MyTelescope.StopAnyMovement();
-        }
-
-        public async Task ParkTelescope()
-        {
-            if (!IsTelescopeConnected)
-                return;
-            await _MyTelescope.ParkTelescope();
-
-        }
-        public void UnParkTelescope()
-        {
-            if (!IsTelescopeConnected)
-                return;
-
-            _MyTelescope.UnParkTelescope();
-        }
-
-        public bool IsTelescopeConnected => _MyTelescope != null && _MyTelescope.IsTelescopeConnected;
-
-        public Task RotateAxisAsync(TelescopeAxes axis, double rate, double time, CancellationToken cancellationToken) => _MyTelescope.RotateAxisAsync(axis, rate, time, cancellationToken);
-
-
-        public TelescopeState TelescopeState => _MyTelescope.TelescopeState;
-
-        #endregion telescope
-
         public Action<string> Logger { get; set; }
 
         private void LogWriteLine(string message)
@@ -102,7 +62,7 @@ namespace VisualMountParking
         private async Task<int?> GetZoneDeltaAsync(int zoneId, ShiftDirection direction)
         {
             await UpdateImageAndPosition();
-            var zone = _PatternVerifier.ZoneMatchList.Find((z) => z.ZoneId == zoneId);
+            var zone = _MarkerMatch.MatchList.Find((z) => z.ZoneId == zoneId);
             if (zone == null) return null;
 
             var delta = direction == ShiftDirection.X ? zone.Target.X - zone.Source.X : zone.Target.Y - zone.Source.Y;
@@ -115,7 +75,7 @@ namespace VisualMountParking
         private async Task<(double, double)> GetMarkerRelativePositionAsync(int markerId)
         {
             await UpdateImageAndPosition();
-            var zone = _PatternVerifier.ZoneMatchList.Find((z) => z.ZoneId == markerId);
+            var zone = _MarkerMatch.MatchList.Find((z) => z.ZoneId == markerId);
             if (zone == null || zone.Target == null)
                 throw new Exception($"Marker {markerId} not found.");
 
@@ -130,11 +90,11 @@ namespace VisualMountParking
         public async Task UpdateImageAndPosition()
         {
             await LoadNewImage();
-            await CheckPosition();
+            await CheckPosition(CurrentImage);
         }
 
-        private EventHandler _ImageUpdated;
-        public event EventHandler ImageUpdated { add { _ImageUpdated += value; } remove { _ImageUpdated -= value; } }
+        private EventHandler<ImageChangedEventArgs> _ImageChanged;
+        public event EventHandler<ImageChangedEventArgs> ImageChanged { add { _ImageChanged += value; } remove { _ImageChanged -= value; } }
 
         public async Task<bool> LoadNewImage()
         {
@@ -143,31 +103,50 @@ namespace VisualMountParking
             if (AdjustImage != null)
                 image = AdjustImage(image);
 
-            _PatternVerifier.NewImage?.Dispose();
-            _PatternVerifier.NewImage = new Bitmap(image);
-            //            CurrentImage?.Dispose();
-            CurrentImage = new Bitmap(image);
+            var previousImage = CurrentImage;
+            var eh = _ImageChanged;
+            if (eh != null)
+                eh(this, new ImageChangedEventArgs { NewImage = image });
+            previousImage?.Dispose();
+            CurrentImage = image;
+
             ////-- per debug
             //CurrentImage = _PatternVerifier.GetDetectionImage();
             ////
-            _ImageUpdated?.Invoke(this, EventArgs.Empty);
-            image.Dispose();
+
             return true;
         }
 
-        public async Task CheckPosition()
+
+        public bool? InRange { get; set; }
+
+        public async Task CheckPosition(Bitmap image)
         {
-            await Task.Run(_PatternVerifier.SearchMatch);
+            await Task.Run(() =>
+            {
+                _MarkerMatch.SearchMatch(image);
+                var ar = _MarkerMatch.MatchList.FirstOrDefault((m) => m.ZoneId == _Config.AutoParkAR.MarkerId);
+                var dec = _MarkerMatch.MatchList.FirstOrDefault((m) => m.ZoneId == _Config.AutoParkDec.MarkerId);
+                if (ar == null || dec == null)
+                {
+                    InRange = null;
+                }
+                else
+                {
+                    var maxdelta = 2;
+                    InRange = ar.GetDistance() <= maxdelta && ar.GetDistance() < maxdelta;
+                }
+            });
         }
 
-        internal IList<Zone> GetReferenceZone()
+        internal IList<MarkerPoint> GetReferenceZone()
         {
-            return _PatternVerifier.ReferenceTemplates;
+            return _MarkerMatch.ReferenceMarkers;
         }
 
         internal IList<ZoneMatch> GetZoneMatch(bool all = true)
         {
-            var matchList = _PatternVerifier.ZoneMatchList;
+            var matchList = _MarkerMatch.MatchList;
             if (all)
                 foreach (var zone in GetReferenceZone())
                 {
@@ -180,9 +159,7 @@ namespace VisualMountParking
             return matchList;
         }
 
-
-        //------------------
-        public async Task<bool> DoVisualPark(CancellationToken cancellationToken)
+        public async Task<bool> SlaveToReference(CancellationToken cancellationToken)
         {
             // Questi devono stare nei settings
             var apRA = _Config.AutoParkAR;
@@ -197,14 +174,14 @@ namespace VisualMountParking
             double decFraction = 1;
 
 
-            bool fast = true;
+            //bool fast = true;
 
-            if (apRA.ZoneId > 0)
+            if (apRA.MarkerId > 0)
             {
                 // Calc initial sense of the vector movement
-                var raMarker = await GetMarkerRelativePositionAsync(apRA.ZoneId);
+                var raMarker = await GetMarkerRelativePositionAsync(apRA.MarkerId);
                 var reverse = (raMarker.Item1 < 0);
-                if (apRA.Direction == ShiftDirection.X)
+                if (apRA.ReverseDirection)
                     reverse = !reverse;
                 if (reverse)
                     raRate *= -1;
@@ -213,7 +190,7 @@ namespace VisualMountParking
                 {
                     Debug.WriteLine($"RA fraction is {raFraction}");
                     // do the movement
-                    raFraction = await MinimizeDistance(apRA.ZoneId, TelescopeAxes.axisPrimary, raRate, raTime, cancellationToken);
+                    raFraction = await MinimizeDistance(apRA.MarkerId, TelescopeAxes.axisPrimary, raRate, raTime, cancellationToken);
                     if (!IsValidNonZero(raFraction))
                         break;
 
@@ -230,19 +207,19 @@ namespace VisualMountParking
 
                 }
             }
-            if (apDec.ZoneId > 0)
+            if (apDec.MarkerId > 0)
             {
                 // Calc initial sense of the vector movement
-                var decMarker = await GetMarkerRelativePositionAsync(apDec.ZoneId);
+                var decMarker = await GetMarkerRelativePositionAsync(apDec.MarkerId);
                 var reverse = (decMarker.Item1 < 0);
-                if (apDec.Direction == ShiftDirection.X)
+                if (apDec.ReverseDirection)
                     reverse = !reverse;
                 if (reverse)
                     decRate *= -1;
                 while (decTime > 0.2)
                 {
                     Debug.WriteLine($"DEC fraction is {decFraction}");
-                    decFraction = await MinimizeDistance(apDec.ZoneId, TelescopeAxes.axisSecondary, decRate, decTime, cancellationToken);
+                    decFraction = await MinimizeDistance(apDec.MarkerId, TelescopeAxes.axisSecondary, decRate, decTime, cancellationToken);
                     if (!IsValidNonZero(decFraction))
                         break;
 
@@ -313,6 +290,4 @@ namespace VisualMountParking
         }
 
     }
-
-
 }

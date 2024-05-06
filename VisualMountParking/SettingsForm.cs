@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VisualMountParking.Camera;
+using VisualMountParking.Markers;
 
 namespace VisualMountParking
 {
@@ -36,8 +37,8 @@ namespace VisualMountParking
                     if (img != null)
                     {
                         picPreview.Image = img;
-                        btSetAsReference.Enabled = true;
-                        btExportPreview.Enabled = true;
+                        btSetAsReference1.Enabled = true;
+                        btSetAsReference2.Enabled = true;
                     }
                 }
             }
@@ -68,7 +69,7 @@ namespace VisualMountParking
             // Telescope
             txtTelescopeDriver.Text = Config.TelescopeDriver;
 
-            numRaRrate.Value = (decimal) Config.MoveRaRate;
+            numRaRrate.Value = (decimal)Config.MoveRaRate;
             numDecRate.Value = (decimal)Config.MoveDecRate;
 
             numRaTime.Value = (decimal)Config.MoveRaTime;
@@ -89,10 +90,13 @@ namespace VisualMountParking
             txtSource.Text = Config.CameraSettings;
 
             // AutoPark
-            numMarkerIdAr.Value = Config.AutoParkAR.ZoneId;
-            numMarkerIdDec.Value = Config.AutoParkDec.ZoneId;
-            cmbMarkerArDirection.SelectedIndex = Config.AutoParkAR.Direction == ShiftDirection.X ? 0 : 1;
-            cmbMarkerDecDirection.SelectedIndex = Config.AutoParkDec.Direction == ShiftDirection.X ? 0 : 1;
+            numMarkerIdAr.Value = Config.AutoParkAR.MarkerId;
+            numMarkerIdDec.Value = Config.AutoParkDec.MarkerId;
+
+            chkReverseAR.Checked = Config.AutoParkAR.ReverseDirection;
+            chkReverseAR.Checked = Config.AutoParkDec.ReverseDirection;
+
+            numPositionTolerance.Value = Config.PositionTolerance;
 
 
         }
@@ -102,14 +106,16 @@ namespace VisualMountParking
             Config.MoveDecRate = (double)numDecRate.Value;
             Config.MoveRaTime = (double)numRaTime.Value;
             Config.MoveDecTime = (double)numDecTime.Value;
-            Config.FastRateMultiplier =  (double)numFastSpeed.Value;
+            Config.FastRateMultiplier = (double)numFastSpeed.Value;
             Config.FastTimeMultiplier = (double)numFastTime.Value;
 
             // AutoPark			
-            Config.AutoParkAR.ZoneId = (int)numMarkerIdAr.Value;
-            Config.AutoParkDec.ZoneId = (int)numMarkerIdDec.Value;
-            Config.AutoParkAR.Direction = cmbMarkerArDirection.SelectedIndex == 0 ? ShiftDirection.X : ShiftDirection.Y;
-            Config.AutoParkDec.Direction = cmbMarkerDecDirection.SelectedIndex == 0 ? ShiftDirection.X : ShiftDirection.Y;
+            Config.AutoParkAR.MarkerId = (int)numMarkerIdAr.Value;
+            Config.AutoParkDec.MarkerId = (int)numMarkerIdDec.Value;
+            Config.AutoParkAR.ReverseDirection = chkReverseAR.Checked;
+            Config.AutoParkDec.ReverseDirection = chkReverseDec.Checked;
+            Config.PositionTolerance = numPositionTolerance.Value;
+
         }
 
         private void txtSource_Validated(object sender, EventArgs e)
@@ -189,12 +195,44 @@ namespace VisualMountParking
 
         private void btSetAsReference_Click(object sender, EventArgs e)
         {
-            Config.ReferenceImage = new Bitmap(picPreview.Image);
+            Config.ReferenceImage1 = new Bitmap(picPreview.Image);
         }
 
         private void btApply_Click(object sender, EventArgs e)
         {
             CopyFormToConfig();
+        }
+
+        private void btSetAsReference2_Click(object sender, EventArgs e)
+        {
+            Config.ReferenceImage2 = new Bitmap(picPreview.Image);
+        }
+
+        private void btSaveMarkers_Click(object sender, EventArgs e)
+        {
+            using (var saveFileDialog1 = new SaveFileDialog())
+            {
+                saveFileDialog1.FileName = "ArUco_Markers.png";
+                saveFileDialog1.Filter = "png files (*.png)|*.png";
+                saveFileDialog1.RestoreDirectory = true;
+                if (saveFileDialog1.ShowDialog() == DialogResult.OK)
+                {
+                    ArucoUtilities.PrintArucoBoard(saveFileDialog1.FileName);
+                }
+            }
+        }
+
+        private void btShowSpeed_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(txtTelescopeDriver.Text))
+            {
+                txtAllowedRates.Text = "Please select a mount driver";
+                return;
+            }
+            var t = new MyTelescope();
+            t.Initialize(txtTelescopeDriver.Text);
+            t.Connect();
+            txtAllowedRates.Text = t.GetRatesTxt();
         }
     }
 }

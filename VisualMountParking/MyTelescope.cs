@@ -5,13 +5,19 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Diagnostics;
-using System.Windows.Forms;
+using System.Text;
 
 namespace VisualMountParking
 {
+    /// <summary>
+    /// Wrapper for ASCOM Telescope
+    /// </summary>
     internal class MyTelescope
-    {
+    {  
+        string _DriverName;
         Telescope _Telescope;
+        private Dictionary<TelescopeAxes, IAxisRates> _ValidRates = new Dictionary<TelescopeAxes, IAxisRates>();
+
         public MyTelescope() { }
 
         public bool IsTelescopeConnected => _Telescope != null && _Telescope.Connected;
@@ -40,14 +46,23 @@ namespace VisualMountParking
             }
         }
 
+        internal void Connect()
+        {
+            if(IsTelescopeConnected)
+                return;
+            if (!string.IsNullOrWhiteSpace(_DriverName))
+            {
+                _Telescope = new Telescope(_DriverName);
+                _Telescope.Connected = true;
+            }
+
+        }
+
         internal void Initialize(string telescopeDriver)
         {
             Disconnect();
-            if (!string.IsNullOrWhiteSpace(telescopeDriver))
-            {
-                _Telescope = new Telescope(telescopeDriver);
-                _Telescope.Connected = true;
-            }
+            _DriverName = telescopeDriver;
+            Connect();
         }
 
         internal void StopAnyMovement()
@@ -94,8 +109,6 @@ namespace VisualMountParking
                 }
             }
         }
-
-        Dictionary<TelescopeAxes, IAxisRates> _ValidRates = new Dictionary<TelescopeAxes, IAxisRates>();
 
         private double AdjustTelescopeRate(TelescopeAxes axis, double desiredRate)
         {
@@ -157,6 +170,7 @@ namespace VisualMountParking
             });
 
         }
+ 
         public void UnParkTelescope()
         {
             if (!IsTelescopeConnected || !_Telescope.AtPark)
@@ -164,6 +178,27 @@ namespace VisualMountParking
 
             _Telescope.Unpark();
             _Telescope.Tracking = false;
+        }
+
+        internal string GetRatesTxt()
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("AR rates:");
+            PrintRates(sb, _Telescope.AxisRates(TelescopeAxes.axisPrimary));
+            sb.AppendLine("\rDEC rates:");
+            PrintRates(sb, _Telescope.AxisRates(TelescopeAxes.axisSecondary));
+            return sb.ToString();
+        }
+
+        private void PrintRates(StringBuilder sb,IAxisRates rates)
+        {
+            foreach (IRate rate in rates)
+            {
+                if (rate.Minimum == rate.Maximum)
+                    sb.AppendLine($"    {rate.Minimum:0.###}");
+                else
+                    sb.AppendLine($"    {rate.Minimum:0.###} - {rate.Maximum:0.###}");
+            }
         }
     }
 

@@ -48,24 +48,32 @@
             this.numRaRrate = new System.Windows.Forms.NumericUpDown();
             this.tabDome = new System.Windows.Forms.TabControl();
             this.tabPageImage = new System.Windows.Forms.TabPage();
+            this.btSetAsReference2 = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
-            this.btSetAsReference = new System.Windows.Forms.Button();
+            this.btSetAsReference1 = new System.Windows.Forms.Button();
             this.lblSource = new System.Windows.Forms.Label();
             this.txtSource = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.cmbSourceType = new System.Windows.Forms.ComboBox();
             this.picPreview = new System.Windows.Forms.PictureBox();
-            this.btExportPreview = new System.Windows.Forms.Button();
             this.btPreview = new System.Windows.Forms.Button();
-            this.tabPageCommands = new System.Windows.Forms.TabPage();
-            this.tabPageTelescope = new System.Windows.Forms.TabPage();
             this.tabPageZone = new System.Windows.Forms.TabPage();
-            this.cmbMarkerDecDirection = new System.Windows.Forms.ComboBox();
-            this.cmbMarkerArDirection = new System.Windows.Forms.ComboBox();
-            this.label11 = new System.Windows.Forms.Label();
-            this.numMarkerIdDec = new System.Windows.Forms.NumericUpDown();
-            this.numMarkerIdAr = new System.Windows.Forms.NumericUpDown();
+            this.btSaveMarkers = new System.Windows.Forms.Button();
+            this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label13 = new System.Windows.Forms.Label();
+            this.label3 = new System.Windows.Forms.Label();
+            this.numPositionTolerance = new System.Windows.Forms.NumericUpDown();
             this.label2 = new System.Windows.Forms.Label();
+            this.chkReverseDec = new System.Windows.Forms.CheckBox();
+            this.numMarkerIdAr = new System.Windows.Forms.NumericUpDown();
+            this.chkReverseAR = new System.Windows.Forms.CheckBox();
+            this.numMarkerIdDec = new System.Windows.Forms.NumericUpDown();
+            this.label12 = new System.Windows.Forms.Label();
+            this.label11 = new System.Windows.Forms.Label();
+            this.tabPageTelescope = new System.Windows.Forms.TabPage();
+            this.txtAllowedRates = new System.Windows.Forms.TextBox();
+            this.btShowSpeed = new System.Windows.Forms.Button();
+            this.tabPageCommands = new System.Windows.Forms.TabPage();
             this.panel1 = new System.Windows.Forms.Panel();
             this.btApply = new System.Windows.Forms.Button();
             this.btCancel = new System.Windows.Forms.Button();
@@ -79,11 +87,13 @@
             this.tabDome.SuspendLayout();
             this.tabPageImage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picPreview)).BeginInit();
-            this.tabPageCommands.SuspendLayout();
-            this.tabPageTelescope.SuspendLayout();
             this.tabPageZone.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numMarkerIdDec)).BeginInit();
+            this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionTolerance)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numMarkerIdAr)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numMarkerIdDec)).BeginInit();
+            this.tabPageTelescope.SuspendLayout();
+            this.tabPageCommands.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -91,7 +101,7 @@
             // 
             this.btSave.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btSave.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btSave.Location = new System.Drawing.Point(349, 15);
+            this.btSave.Location = new System.Drawing.Point(343, 15);
             this.btSave.Name = "btSave";
             this.btSave.Size = new System.Drawing.Size(99, 28);
             this.btSave.TabIndex = 22;
@@ -134,13 +144,13 @@
             this.txtTelescopeDriver.Location = new System.Drawing.Point(8, 35);
             this.txtTelescopeDriver.Name = "txtTelescopeDriver";
             this.txtTelescopeDriver.ReadOnly = true;
-            this.txtTelescopeDriver.Size = new System.Drawing.Size(382, 20);
+            this.txtTelescopeDriver.Size = new System.Drawing.Size(376, 20);
             this.txtTelescopeDriver.TabIndex = 31;
             // 
             // btTelescopeChoose
             // 
             this.btTelescopeChoose.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btTelescopeChoose.Location = new System.Drawing.Point(396, 35);
+            this.btTelescopeChoose.Location = new System.Drawing.Point(390, 35);
             this.btTelescopeChoose.Name = "btTelescopeChoose";
             this.btTelescopeChoose.Size = new System.Drawing.Size(48, 21);
             this.btTelescopeChoose.TabIndex = 33;
@@ -367,33 +377,45 @@
             // tabDome
             // 
             this.tabDome.Controls.Add(this.tabPageImage);
-            this.tabDome.Controls.Add(this.tabPageCommands);
-            this.tabDome.Controls.Add(this.tabPageTelescope);
             this.tabDome.Controls.Add(this.tabPageZone);
+            this.tabDome.Controls.Add(this.tabPageTelescope);
+            this.tabDome.Controls.Add(this.tabPageCommands);
             this.tabDome.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabDome.Location = new System.Drawing.Point(0, 0);
             this.tabDome.Name = "tabDome";
             this.tabDome.SelectedIndex = 0;
-            this.tabDome.Size = new System.Drawing.Size(460, 405);
+            this.tabDome.Size = new System.Drawing.Size(454, 396);
             this.tabDome.TabIndex = 39;
             // 
             // tabPageImage
             // 
+            this.tabPageImage.Controls.Add(this.btSetAsReference2);
             this.tabPageImage.Controls.Add(this.label10);
-            this.tabPageImage.Controls.Add(this.btSetAsReference);
+            this.tabPageImage.Controls.Add(this.btSetAsReference1);
             this.tabPageImage.Controls.Add(this.lblSource);
             this.tabPageImage.Controls.Add(this.txtSource);
             this.tabPageImage.Controls.Add(this.label1);
             this.tabPageImage.Controls.Add(this.cmbSourceType);
             this.tabPageImage.Controls.Add(this.picPreview);
-            this.tabPageImage.Controls.Add(this.btExportPreview);
             this.tabPageImage.Controls.Add(this.btPreview);
             this.tabPageImage.Location = new System.Drawing.Point(4, 22);
             this.tabPageImage.Name = "tabPageImage";
             this.tabPageImage.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageImage.Size = new System.Drawing.Size(452, 379);
+            this.tabPageImage.Size = new System.Drawing.Size(446, 370);
             this.tabPageImage.TabIndex = 0;
             this.tabPageImage.Text = "Image";
+            // 
+            // btSetAsReference2
+            // 
+            this.btSetAsReference2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btSetAsReference2.Enabled = false;
+            this.btSetAsReference2.Location = new System.Drawing.Point(341, 248);
+            this.btSetAsReference2.Name = "btSetAsReference2";
+            this.btSetAsReference2.Size = new System.Drawing.Size(97, 49);
+            this.btSetAsReference2.TabIndex = 33;
+            this.btSetAsReference2.Text = "Set as Reference2";
+            this.btSetAsReference2.UseVisualStyleBackColor = true;
+            this.btSetAsReference2.Click += new System.EventHandler(this.btSetAsReference2_Click);
             // 
             // label10
             // 
@@ -404,17 +426,17 @@
             this.label10.TabIndex = 32;
             this.label10.Text = "Camera type:";
             // 
-            // btSetAsReference
+            // btSetAsReference1
             // 
-            this.btSetAsReference.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btSetAsReference.Enabled = false;
-            this.btSetAsReference.Location = new System.Drawing.Point(347, 193);
-            this.btSetAsReference.Name = "btSetAsReference";
-            this.btSetAsReference.Size = new System.Drawing.Size(85, 49);
-            this.btSetAsReference.TabIndex = 31;
-            this.btSetAsReference.Text = "Set as reference";
-            this.btSetAsReference.UseVisualStyleBackColor = true;
-            this.btSetAsReference.Click += new System.EventHandler(this.btSetAsReference_Click);
+            this.btSetAsReference1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btSetAsReference1.Enabled = false;
+            this.btSetAsReference1.Location = new System.Drawing.Point(341, 193);
+            this.btSetAsReference1.Name = "btSetAsReference1";
+            this.btSetAsReference1.Size = new System.Drawing.Size(97, 49);
+            this.btSetAsReference1.TabIndex = 31;
+            this.btSetAsReference1.Text = "Set as Reference1";
+            this.btSetAsReference1.UseVisualStyleBackColor = true;
+            this.btSetAsReference1.Click += new System.EventHandler(this.btSetAsReference_Click);
             // 
             // lblSource
             // 
@@ -431,7 +453,7 @@
             this.txtSource.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
             this.txtSource.Location = new System.Drawing.Point(82, 34);
             this.txtSource.Name = "txtSource";
-            this.txtSource.Size = new System.Drawing.Size(332, 20);
+            this.txtSource.Size = new System.Drawing.Size(326, 20);
             this.txtSource.TabIndex = 18;
             this.txtSource.Validated += new System.EventHandler(this.txtSource_Validated);
             // 
@@ -464,33 +486,203 @@
             this.picPreview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.picPreview.Location = new System.Drawing.Point(6, 69);
             this.picPreview.Name = "picPreview";
-            this.picPreview.Size = new System.Drawing.Size(335, 304);
+            this.picPreview.Size = new System.Drawing.Size(329, 295);
             this.picPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.picPreview.TabIndex = 26;
             this.picPreview.TabStop = false;
             // 
-            // btExportPreview
-            // 
-            this.btExportPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btExportPreview.Enabled = false;
-            this.btExportPreview.Location = new System.Drawing.Point(347, 131);
-            this.btExportPreview.Name = "btExportPreview";
-            this.btExportPreview.Size = new System.Drawing.Size(85, 28);
-            this.btExportPreview.TabIndex = 30;
-            this.btExportPreview.Text = "Export preview";
-            this.btExportPreview.UseVisualStyleBackColor = true;
-            this.btExportPreview.Click += new System.EventHandler(this.btExportPreview_Click);
-            // 
             // btPreview
             // 
             this.btPreview.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btPreview.Location = new System.Drawing.Point(347, 69);
+            this.btPreview.Location = new System.Drawing.Point(341, 69);
             this.btPreview.Name = "btPreview";
-            this.btPreview.Size = new System.Drawing.Size(85, 56);
+            this.btPreview.Size = new System.Drawing.Size(97, 52);
             this.btPreview.TabIndex = 27;
             this.btPreview.Text = "Load Preview";
             this.btPreview.UseVisualStyleBackColor = true;
             this.btPreview.Click += new System.EventHandler(this.btPreview_Click);
+            // 
+            // tabPageZone
+            // 
+            this.tabPageZone.Controls.Add(this.btSaveMarkers);
+            this.tabPageZone.Controls.Add(this.groupBox2);
+            this.tabPageZone.Location = new System.Drawing.Point(4, 22);
+            this.tabPageZone.Name = "tabPageZone";
+            this.tabPageZone.Size = new System.Drawing.Size(446, 370);
+            this.tabPageZone.TabIndex = 3;
+            this.tabPageZone.Text = "Markers";
+            // 
+            // btSaveMarkers
+            // 
+            this.btSaveMarkers.Location = new System.Drawing.Point(8, 222);
+            this.btSaveMarkers.Name = "btSaveMarkers";
+            this.btSaveMarkers.Size = new System.Drawing.Size(124, 33);
+            this.btSaveMarkers.TabIndex = 33;
+            this.btSaveMarkers.Text = "Save Markers Image";
+            this.btSaveMarkers.UseVisualStyleBackColor = true;
+            this.btSaveMarkers.Click += new System.EventHandler(this.btSaveMarkers_Click);
+            // 
+            // groupBox2
+            // 
+            this.groupBox2.Controls.Add(this.label13);
+            this.groupBox2.Controls.Add(this.label3);
+            this.groupBox2.Controls.Add(this.numPositionTolerance);
+            this.groupBox2.Controls.Add(this.label2);
+            this.groupBox2.Controls.Add(this.chkReverseDec);
+            this.groupBox2.Controls.Add(this.numMarkerIdAr);
+            this.groupBox2.Controls.Add(this.chkReverseAR);
+            this.groupBox2.Controls.Add(this.numMarkerIdDec);
+            this.groupBox2.Controls.Add(this.label12);
+            this.groupBox2.Controls.Add(this.label11);
+            this.groupBox2.Location = new System.Drawing.Point(8, 17);
+            this.groupBox2.Name = "groupBox2";
+            this.groupBox2.Size = new System.Drawing.Size(253, 189);
+            this.groupBox2.TabIndex = 40;
+            this.groupBox2.TabStop = false;
+            // 
+            // label13
+            // 
+            this.label13.AutoSize = true;
+            this.label13.Location = new System.Drawing.Point(23, 140);
+            this.label13.Name = "label13";
+            this.label13.Size = new System.Drawing.Size(139, 13);
+            this.label13.TabIndex = 39;
+            this.label13.Text = "Green Light tolerance (pixel)";
+            this.label13.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(91, 16);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(54, 13);
+            this.label3.TabIndex = 34;
+            this.label3.Text = "Marker ID";
+            // 
+            // numPositionTolerance
+            // 
+            this.numPositionTolerance.Location = new System.Drawing.Point(177, 138);
+            this.numPositionTolerance.Maximum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.numPositionTolerance.Name = "numPositionTolerance";
+            this.numPositionTolerance.Size = new System.Drawing.Size(59, 20);
+            this.numPositionTolerance.TabIndex = 38;
+            this.numPositionTolerance.Value = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(23, 48);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(53, 13);
+            this.label2.TabIndex = 27;
+            this.label2.Text = "A.R. Axis:";
+            this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // chkReverseDec
+            // 
+            this.chkReverseDec.AutoSize = true;
+            this.chkReverseDec.Location = new System.Drawing.Point(184, 80);
+            this.chkReverseDec.Name = "chkReverseDec";
+            this.chkReverseDec.Size = new System.Drawing.Size(15, 14);
+            this.chkReverseDec.TabIndex = 37;
+            this.chkReverseDec.UseVisualStyleBackColor = true;
+            // 
+            // numMarkerIdAr
+            // 
+            this.numMarkerIdAr.Location = new System.Drawing.Point(86, 46);
+            this.numMarkerIdAr.Maximum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.numMarkerIdAr.Name = "numMarkerIdAr";
+            this.numMarkerIdAr.Size = new System.Drawing.Size(59, 20);
+            this.numMarkerIdAr.TabIndex = 28;
+            // 
+            // chkReverseAR
+            // 
+            this.chkReverseAR.AutoSize = true;
+            this.chkReverseAR.Location = new System.Drawing.Point(184, 48);
+            this.chkReverseAR.Name = "chkReverseAR";
+            this.chkReverseAR.Size = new System.Drawing.Size(15, 14);
+            this.chkReverseAR.TabIndex = 35;
+            this.chkReverseAR.UseVisualStyleBackColor = true;
+            // 
+            // numMarkerIdDec
+            // 
+            this.numMarkerIdDec.Location = new System.Drawing.Point(86, 78);
+            this.numMarkerIdDec.Maximum = new decimal(new int[] {
+            50,
+            0,
+            0,
+            0});
+            this.numMarkerIdDec.Name = "numMarkerIdDec";
+            this.numMarkerIdDec.Size = new System.Drawing.Size(59, 20);
+            this.numMarkerIdDec.TabIndex = 29;
+            // 
+            // label12
+            // 
+            this.label12.Location = new System.Drawing.Point(165, 11);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(71, 38);
+            this.label12.TabIndex = 36;
+            this.label12.Text = "Reverse first movement";
+            this.label12.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(23, 80);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(52, 13);
+            this.label11.TabIndex = 30;
+            this.label11.Text = "Dec. Axis";
+            this.label11.TextAlign = System.Drawing.ContentAlignment.TopRight;
+            // 
+            // tabPageTelescope
+            // 
+            this.tabPageTelescope.Controls.Add(this.txtAllowedRates);
+            this.tabPageTelescope.Controls.Add(this.btShowSpeed);
+            this.tabPageTelescope.Controls.Add(this.txtTelescopeDriver);
+            this.tabPageTelescope.Controls.Add(this.groupBox1);
+            this.tabPageTelescope.Controls.Add(this.btTelescopeChoose);
+            this.tabPageTelescope.Controls.Add(this.label4);
+            this.tabPageTelescope.Location = new System.Drawing.Point(4, 22);
+            this.tabPageTelescope.Name = "tabPageTelescope";
+            this.tabPageTelescope.Size = new System.Drawing.Size(446, 370);
+            this.tabPageTelescope.TabIndex = 2;
+            this.tabPageTelescope.Text = "Telescope";
+            // 
+            // txtAllowedRates
+            // 
+            this.txtAllowedRates.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtAllowedRates.Location = new System.Drawing.Point(256, 112);
+            this.txtAllowedRates.Multiline = true;
+            this.txtAllowedRates.Name = "txtAllowedRates";
+            this.txtAllowedRates.ReadOnly = true;
+            this.txtAllowedRates.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtAllowedRates.Size = new System.Drawing.Size(182, 250);
+            this.txtAllowedRates.TabIndex = 40;
+            // 
+            // btShowSpeed
+            // 
+            this.btShowSpeed.Location = new System.Drawing.Point(256, 83);
+            this.btShowSpeed.Name = "btShowSpeed";
+            this.btShowSpeed.Size = new System.Drawing.Size(128, 23);
+            this.btShowSpeed.TabIndex = 39;
+            this.btShowSpeed.Text = "Show allowed speed";
+            this.btShowSpeed.UseVisualStyleBackColor = true;
+            this.btShowSpeed.Click += new System.EventHandler(this.btShowSpeed_Click);
             // 
             // tabPageCommands
             // 
@@ -499,93 +691,9 @@
             this.tabPageCommands.Location = new System.Drawing.Point(4, 22);
             this.tabPageCommands.Name = "tabPageCommands";
             this.tabPageCommands.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageCommands.Size = new System.Drawing.Size(452, 379);
+            this.tabPageCommands.Size = new System.Drawing.Size(446, 370);
             this.tabPageCommands.TabIndex = 1;
             this.tabPageCommands.Text = "Commands";
-            // 
-            // tabPageTelescope
-            // 
-            this.tabPageTelescope.Controls.Add(this.txtTelescopeDriver);
-            this.tabPageTelescope.Controls.Add(this.groupBox1);
-            this.tabPageTelescope.Controls.Add(this.btTelescopeChoose);
-            this.tabPageTelescope.Controls.Add(this.label4);
-            this.tabPageTelescope.Location = new System.Drawing.Point(4, 22);
-            this.tabPageTelescope.Name = "tabPageTelescope";
-            this.tabPageTelescope.Size = new System.Drawing.Size(452, 379);
-            this.tabPageTelescope.TabIndex = 2;
-            this.tabPageTelescope.Text = "Telescope";
-            // 
-            // tabPageZone
-            // 
-            this.tabPageZone.Controls.Add(this.cmbMarkerDecDirection);
-            this.tabPageZone.Controls.Add(this.cmbMarkerArDirection);
-            this.tabPageZone.Controls.Add(this.label11);
-            this.tabPageZone.Controls.Add(this.numMarkerIdDec);
-            this.tabPageZone.Controls.Add(this.numMarkerIdAr);
-            this.tabPageZone.Controls.Add(this.label2);
-            this.tabPageZone.Location = new System.Drawing.Point(4, 22);
-            this.tabPageZone.Name = "tabPageZone";
-            this.tabPageZone.Size = new System.Drawing.Size(452, 379);
-            this.tabPageZone.TabIndex = 3;
-            this.tabPageZone.Text = "Markers";
-            // 
-            // cmbMarkerDecDirection
-            // 
-            this.cmbMarkerDecDirection.FormattingEnabled = true;
-            this.cmbMarkerDecDirection.Items.AddRange(new object[] {
-            "X",
-            "Y"});
-            this.cmbMarkerDecDirection.Location = new System.Drawing.Point(164, 56);
-            this.cmbMarkerDecDirection.Name = "cmbMarkerDecDirection";
-            this.cmbMarkerDecDirection.Size = new System.Drawing.Size(46, 21);
-            this.cmbMarkerDecDirection.TabIndex = 32;
-            this.cmbMarkerDecDirection.Text = "X";
-            // 
-            // cmbMarkerArDirection
-            // 
-            this.cmbMarkerArDirection.FormattingEnabled = true;
-            this.cmbMarkerArDirection.Items.AddRange(new object[] {
-            "X",
-            "Y"});
-            this.cmbMarkerArDirection.Location = new System.Drawing.Point(164, 30);
-            this.cmbMarkerArDirection.Name = "cmbMarkerArDirection";
-            this.cmbMarkerArDirection.Size = new System.Drawing.Size(46, 21);
-            this.cmbMarkerArDirection.TabIndex = 31;
-            this.cmbMarkerArDirection.Text = "X";
-            // 
-            // label11
-            // 
-            this.label11.AutoSize = true;
-            this.label11.Location = new System.Drawing.Point(27, 59);
-            this.label11.Name = "label11";
-            this.label11.Size = new System.Drawing.Size(30, 13);
-            this.label11.TabIndex = 30;
-            this.label11.Text = "Dec.";
-            this.label11.TextAlign = System.Drawing.ContentAlignment.TopRight;
-            // 
-            // numMarkerIdDec
-            // 
-            this.numMarkerIdDec.Location = new System.Drawing.Point(82, 57);
-            this.numMarkerIdDec.Name = "numMarkerIdDec";
-            this.numMarkerIdDec.Size = new System.Drawing.Size(59, 20);
-            this.numMarkerIdDec.TabIndex = 29;
-            // 
-            // numMarkerIdAr
-            // 
-            this.numMarkerIdAr.Location = new System.Drawing.Point(82, 31);
-            this.numMarkerIdAr.Name = "numMarkerIdAr";
-            this.numMarkerIdAr.Size = new System.Drawing.Size(59, 20);
-            this.numMarkerIdAr.TabIndex = 28;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(27, 33);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(31, 13);
-            this.label2.TabIndex = 27;
-            this.label2.Text = "A.R.:";
-            this.label2.TextAlign = System.Drawing.ContentAlignment.TopRight;
             // 
             // panel1
             // 
@@ -593,16 +701,16 @@
             this.panel1.Controls.Add(this.btCancel);
             this.panel1.Controls.Add(this.btSave);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 405);
+            this.panel1.Location = new System.Drawing.Point(0, 396);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(460, 55);
+            this.panel1.Size = new System.Drawing.Size(454, 55);
             this.panel1.TabIndex = 40;
             // 
             // btApply
             // 
             this.btApply.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btApply.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.btApply.Location = new System.Drawing.Point(242, 15);
+            this.btApply.Location = new System.Drawing.Point(236, 15);
             this.btApply.Name = "btApply";
             this.btApply.Size = new System.Drawing.Size(99, 28);
             this.btApply.TabIndex = 24;
@@ -614,7 +722,7 @@
             // 
             this.btCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.btCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.btCancel.Location = new System.Drawing.Point(135, 15);
+            this.btCancel.Location = new System.Drawing.Point(129, 15);
             this.btCancel.Name = "btCancel";
             this.btCancel.Size = new System.Drawing.Size(99, 28);
             this.btCancel.TabIndex = 23;
@@ -625,7 +733,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(460, 460);
+            this.ClientSize = new System.Drawing.Size(454, 451);
             this.Controls.Add(this.tabDome);
             this.Controls.Add(this.panel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
@@ -648,13 +756,15 @@
             this.tabPageImage.ResumeLayout(false);
             this.tabPageImage.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picPreview)).EndInit();
-            this.tabPageCommands.ResumeLayout(false);
+            this.tabPageZone.ResumeLayout(false);
+            this.groupBox2.ResumeLayout(false);
+            this.groupBox2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numPositionTolerance)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numMarkerIdAr)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.numMarkerIdDec)).EndInit();
             this.tabPageTelescope.ResumeLayout(false);
             this.tabPageTelescope.PerformLayout();
-            this.tabPageZone.ResumeLayout(false);
-            this.tabPageZone.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numMarkerIdDec)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.numMarkerIdAr)).EndInit();
+            this.tabPageCommands.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.ResumeLayout(false);
 
@@ -690,17 +800,25 @@
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.ComboBox cmbSourceType;
 		private System.Windows.Forms.PictureBox picPreview;
-		private System.Windows.Forms.Button btExportPreview;
 		private System.Windows.Forms.Button btPreview;
-		private System.Windows.Forms.Button btSetAsReference;
+		private System.Windows.Forms.Button btSetAsReference1;
 		private System.Windows.Forms.Label label10;
 		private System.Windows.Forms.Button btApply;
 		private System.Windows.Forms.Button btCancel;
-		private System.Windows.Forms.ComboBox cmbMarkerDecDirection;
-		private System.Windows.Forms.ComboBox cmbMarkerArDirection;
 		private System.Windows.Forms.Label label11;
 		private System.Windows.Forms.NumericUpDown numMarkerIdDec;
 		private System.Windows.Forms.NumericUpDown numMarkerIdAr;
 		private System.Windows.Forms.Label label2;
-	}
+        private System.Windows.Forms.Button btSetAsReference2;
+        private System.Windows.Forms.Button btSaveMarkers;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.CheckBox chkReverseDec;
+        private System.Windows.Forms.CheckBox chkReverseAR;
+        private System.Windows.Forms.Label label12;
+        private System.Windows.Forms.Label label13;
+        private System.Windows.Forms.NumericUpDown numPositionTolerance;
+        private System.Windows.Forms.GroupBox groupBox2;
+        private System.Windows.Forms.TextBox txtAllowedRates;
+        private System.Windows.Forms.Button btShowSpeed;
+    }
 }
