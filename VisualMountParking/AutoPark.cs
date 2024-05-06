@@ -19,9 +19,6 @@ namespace VisualMountParking
         private ICamera _Camera;
 
         public Bitmap CurrentImage { get; private set; }
-
-        public Func<Bitmap, Bitmap> AdjustImage { get; set; }
-
         public void Initialize(Config config, MarkerMatchEngine markerMatch, MyTelescope myTelescope)
         {
             _Config = config;
@@ -59,16 +56,6 @@ namespace VisualMountParking
             Logger("\r\n");
         }
 
-        private async Task<int?> GetZoneDeltaAsync(int zoneId, ShiftDirection direction)
-        {
-            await UpdateImageAndPosition();
-            var zone = _MarkerMatch.MatchList.Find((z) => z.ZoneId == zoneId);
-            if (zone == null) return null;
-
-            var delta = direction == ShiftDirection.X ? zone.Target.X - zone.Source.X : zone.Target.Y - zone.Source.Y;
-            return delta;
-        }
-
         /// <summary>
         /// Get Marker position relative to target
         /// </summary>
@@ -100,9 +87,6 @@ namespace VisualMountParking
         {
             var image = await _Camera.LoadImageAsync();
 
-            if (AdjustImage != null)
-                image = AdjustImage(image);
-
             var previousImage = CurrentImage;
             var eh = _ImageChanged;
             if (eh != null)
@@ -117,7 +101,10 @@ namespace VisualMountParking
             return true;
         }
 
-
+        /// <summary>
+        /// Position of RA/DEC Markers is in tolerance range?
+        /// null if Markers are not detected.
+        /// </summary>
         public bool? InRange { get; set; }
 
         public async Task CheckPosition(Bitmap image)
@@ -134,7 +121,7 @@ namespace VisualMountParking
                 else
                 {
                     var maxdelta = 2;
-                    InRange = ar.GetDistance() <= maxdelta && ar.GetDistance() < maxdelta;
+                    InRange = ar.GetDistance() <= maxdelta && dec.GetDistance() < maxdelta;
                 }
             });
         }
@@ -170,32 +157,52 @@ namespace VisualMountParking
             var decRate = _Config.MoveDecRate;
             var decTime = _Config.MoveDecTime * _Config.FastTimeMultiplier;
 
-            double raFraction = 1;
-            double decFraction = 1;
+            Debug.WriteLine($"-- Slave RA Axis --");
+            await SlewOneAxis(TelescopeAxes.axisPrimary, raRate, raTime, apRA.ReverseDirection, apRA.MarkerId, cancellationToken);
+            Debug.WriteLine($"-- Slave DEC Axis --");
+            await SlewOneAxis(TelescopeAxes.axisSecondary, decRate, decTime, apDec.ReverseDirection, apDec.MarkerId, cancellationToken);
 
+            Debug.WriteLine($"Slave completed");
+            return true;
 
+        }
+
+        private async Task<double> SlewOneAxis(TelescopeAxes axis, double rate, double time, bool reverseDirection, int markerId, CancellationToken cancellationToken)
+        {
             //bool fast = true;
-
-            if (apRA.MarkerId > 0)
+            double fraction = 1;
+            if (markerId > 0)
             {
                 // Calc initial sense of the vector movement
-                var raMarker = await GetMarkerRelativePositionAsync(apRA.MarkerId);
-                var reverse = (raMarker.Item1 < 0);
-                if (apRA.ReverseDirection)
+                var marker = await GetMarkerRelativePositionAsync(markerId);
+                var reverse = (marker.Item1 < 0);
+                if (reverseDirection)
                     reverse = !reverse;
                 if (reverse)
-                    raRate *= -1;
+                    rate *= -1;
 
-                while (raTime > 0.2)
+                // Verify distance
+                var Ax = marker.Item1;
+                var Ay = marker.Item2;
+                var initialDistance = Math.Sqrt(Math.Pow(Ax, 2) + Math.Pow(Ay, 2));
+                if (initialDistance < 1)
+                    return 0;
+
+                // If tpp is know recalc inital time
+                if (savedTravelTime.TryGetValue(axis, out double tpp))
+                {                    
+                    time = tpp * initialDistance;
+                }
+
+                while (time > 0.2)
                 {
-                    Debug.WriteLine($"RA fraction is {raFraction}");
                     // do the movement
-                    raFraction = await MinimizeDistance(apRA.MarkerId, TelescopeAxes.axisPrimary, raRate, raTime, cancellationToken);
-                    if (!IsValidNonZero(raFraction))
+                    fraction = await MinimizeDistance(markerId, axis, rate, time, cancellationToken);
+                    if (!IsValidNonZero(fraction))
                         break;
 
-                    raRate = raRate * Math.Sign(raFraction);
-                    raTime = raTime * Math.Abs(raFraction);
+                    rate = rate * Math.Sign(fraction);
+                    time = time * Math.Abs(fraction);
 
                     //if (fast && raTime < 100)
                     //{
@@ -207,30 +214,8 @@ namespace VisualMountParking
 
                 }
             }
-            if (apDec.MarkerId > 0)
-            {
-                // Calc initial sense of the vector movement
-                var decMarker = await GetMarkerRelativePositionAsync(apDec.MarkerId);
-                var reverse = (decMarker.Item1 < 0);
-                if (apDec.ReverseDirection)
-                    reverse = !reverse;
-                if (reverse)
-                    decRate *= -1;
-                while (decTime > 0.2)
-                {
-                    Debug.WriteLine($"DEC fraction is {decFraction}");
-                    decFraction = await MinimizeDistance(apDec.MarkerId, TelescopeAxes.axisSecondary, decRate, decTime, cancellationToken);
-                    if (!IsValidNonZero(decFraction))
-                        break;
 
-                    decRate = decRate * Math.Sign(decFraction);
-                    decTime = decTime * Math.Abs(decFraction);
-                }
-            }
-
-            Debug.WriteLine($"Fractions are {raFraction},{decFraction} => completed");
-            return true;
-
+            return fraction;
         }
 
         private bool IsValidNonZero(double n)
@@ -240,14 +225,17 @@ namespace VisualMountParking
             return true;
         }
 
+
+        private Dictionary<TelescopeAxes, double> savedTravelTime = new Dictionary<TelescopeAxes, double>();
+
         private async Task<double> MinimizeDistance(int markerId, TelescopeAxes axis, double moveRate, double moveTime, CancellationToken cancellationToken)
         {
             var A = await GetMarkerRelativePositionAsync(markerId);
             var Ax = A.Item1;
             var Ay = A.Item2;
-            var curDistance = Math.Sqrt(Math.Pow(Ax, 2) + Math.Pow(Ay, 2));
-            if (curDistance < 1)
-                return 0;
+            var initialDistance = Math.Sqrt(Math.Pow(Ax, 2) + Math.Pow(Ay, 2));
+            if (initialDistance < 0.5)
+                return 0;           
 
             await _MyTelescope.RotateAxisAsync(axis, moveRate, moveTime, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
@@ -258,7 +246,7 @@ namespace VisualMountParking
             /*  ho due punti in un sistema cartesiano centrato sulla destinazione
                 stanno su una retta y = m*x+q
                 il punto di quella retta più vicino all'origine è l'intersezione con la retta perpendicolare di equazione y=-m*x
-                Questo è il punto che voglio raggiungere continuando a muovermi nella direzione attuale (il varso viene calcolato).
+                Questo è il punto che voglio raggiungere continuando a muovermi nella direzione attuale (il verso viene calcolato).
             */
 
             if (Ax == Bx)
@@ -273,20 +261,28 @@ namespace VisualMountParking
 
             var nextMove = (Bx - Cx) / (Ax - Bx); // frazione del movimento precedente, se positivo va nello stesso verso, se negativo in verso opposto
 
-            curDistance = Math.Sqrt(Math.Pow(Bx, 2) + Math.Pow(By, 2));
+            var curDistance = Math.Sqrt(Math.Pow(Bx, 2) + Math.Pow(By, 2));
 
-            Debug.WriteLine($"Spostamento ottenuto {Ax - Bx},{Ay - By}. Distanza rimasta = {curDistance} next={nextMove}");
+            if (Math.Sign(initialDistance) == Math.Sign(curDistance))
+            {
+                var deltaDistance = Math.Abs( initialDistance - curDistance);
+                if (deltaDistance > 8)
+                {
+                    var timePerPixel = moveTime / deltaDistance;
+                    savedTravelTime[axis] = timePerPixel;
+                }
+            }
+
+            Debug.WriteLine($"Distanza iniziale={initialDistance}, Distanza rimasta = {curDistance}, tempo={moveTime}, Spostamento ottenuto {Ax - Bx},{Ay - By}, next fraction={nextMove}");
 
             if (curDistance < 0.5)
             {
-                Debug.WriteLine("Distanza minore di 1");
+                Debug.WriteLine("Distanza minore di 0.5 -> fine");
                 return 0;
             }
             if (curDistance < 8)
                 return nextMove;
-            if (curDistance < 20)
-                return nextMove * 0.8;
-            return nextMove * 0.5;
+            return nextMove * 0.85;
         }
 
     }

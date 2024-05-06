@@ -62,7 +62,7 @@ namespace VisualMountParking
         {
             Disconnect();
             _DriverName = telescopeDriver;
-            Connect();
+            //Connect();
         }
 
         internal void StopAnyMovement()
@@ -87,7 +87,7 @@ namespace VisualMountParking
                 throw new InvalidOperationException("Mount is At Park");
 
             var validRate = AdjustTelescopeRate(axis, rate);
-            Debug.WriteLine($"Axis {axis}, desiredRate={rate}, validRate={validRate}");
+//            Debug.WriteLine($"Axis {axis}, desiredRate={rate}, validRate={validRate}");
 
             cancellationToken.ThrowIfCancellationRequested();
 

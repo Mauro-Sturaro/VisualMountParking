@@ -33,6 +33,7 @@ namespace VisualMountParking
 
         private async void MainForm_Load(object sender, EventArgs e)
         {
+
             cmbImageToShow.SelectedIndex = 0;
             cmbReferenceImage.SelectedIndex = 0;
 
@@ -45,7 +46,6 @@ namespace VisualMountParking
             _MyTelescope.Initialize(config.TelescopeDriver);
 
             _vpDriver = new AutoPark();
-            _vpDriver.AdjustImage = AdjustImage;
             _vpDriver.Initialize(config, _markersFinder, _MyTelescope);
 
             UpdateMovementButtons();
@@ -54,67 +54,6 @@ namespace VisualMountParking
 
             await _vpDriver.UpdateImageAndPosition();
             timerImage.Enabled = !chkFreezeImage.Checked;
-        }
-
-
-        private Bitmap AdjustImage(Bitmap image)
-        {
-            var brighness = tbLum.Value;
-            var contrast = tbContrast.Value;
-
-            /// Regola la luminosità, 50 = unchange, valori da 0 a 100
-            if (brighness != 50 || contrast != 50)
-            {
-                var newImage = AdjustBrightness(image, brighness / 50, contrast / 50); /* range 0-2 */
-                image.Dispose();
-                return newImage;
-            }
-            return image;
-        }
-
-        private Bitmap AdjustBrightness(Image image, float brightness, float contrast)
-        {
-
-            if (image == null)
-                throw new ArgumentNullException("image");
-            if (brightness < 0 || brightness > 2)
-                throw new ArgumentOutOfRangeException("brightness must be between 0 and 2");
-            //------------------
-
-            float b = brightness - 1;
-            float c = contrast;
-            float t = (1.0f - c) / 2.0f;
-
-            ColorMatrix cm = new ColorMatrix(new float[][]
-                {
-                    new float[] {c, 0, 0, 0, 0},
-                    new float[] {0, c, 0, 0, 0},
-                    new float[] {0, 0, c, 0, 0},
-                    new float[] {0, 0, 0, 1, 0},
-                    new float[] {t+b, t+b, t+b, 0, 1},
-                });
-            //------------------
-            ImageAttributes attributes = new ImageAttributes();
-            attributes.SetColorMatrix(cm);
-
-            // Draw the image onto the new bitmap while applying the new ColorMatrix.
-            Point[] points =
-            {
-                new Point(0, 0),
-                new Point(image.Width, 0),
-                new Point(0, image.Height),
-            };
-            Rectangle rect = new Rectangle(0, 0, image.Width, image.Height);
-
-            // Make the result bitmap.
-            Bitmap bm = new Bitmap(image.Width, image.Height);
-            using (Graphics gr = Graphics.FromImage(bm))
-            {
-                gr.DrawImage(image, points, rect, GraphicsUnit.Pixel, attributes);
-            }
-
-            // Return the result.
-            return bm;
         }
 
         private void _vpDriver_ImageChanged(object sender, ImageChangedEventArgs e)
@@ -367,43 +306,58 @@ namespace VisualMountParking
 
         private async void btRaLow2_Click(object sender, EventArgs e)
         {
-            
+            MoveButtonsActive = true;
             await RotateAxis(TelescopeAxes.axisPrimary, -config.MoveRaRate * config.FastRateMultiplier, config.MoveRaTime * config.FastTimeMultiplier);
+            MoveButtonsActive = false;
         }
 
         private async void btRaLow_Click(object sender, EventArgs e)
         {
+            MoveButtonsActive = true;
             await RotateAxis(TelescopeAxes.axisPrimary, -config.MoveRaRate, config.MoveRaTime);
+            MoveButtonsActive = false;
         }
 
         private async void btRaHigh_Click(object sender, EventArgs e)
         {
+            MoveButtonsActive = true;
             await RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaRate, config.MoveRaTime);
+            MoveButtonsActive = false;
         }
 
         private async void btRaHigh2_Click(object sender, EventArgs e)
         {
+            MoveButtonsActive = true;
             await RotateAxis(TelescopeAxes.axisPrimary, config.MoveRaRate * config.FastRateMultiplier, config.MoveRaTime * config.FastTimeMultiplier);
+            MoveButtonsActive = false;
         }
 
         private async void btDecLow2_Click(object sender, EventArgs e)
         {
+            MoveButtonsActive = true;
             await RotateAxis(TelescopeAxes.axisSecondary, -config.MoveDecRate * config.FastRateMultiplier, config.MoveDecTime * config.FastTimeMultiplier);
+            MoveButtonsActive = false;
         }
 
         private async void btDecLow_Click(object sender, EventArgs e)
         {
+            MoveButtonsActive = true;
             await RotateAxis(TelescopeAxes.axisSecondary, -config.MoveDecRate, config.MoveRaTime);
+            MoveButtonsActive = false;
         }
 
         private async void btDecHigh_Click(object sender, EventArgs e)
         {
+            MoveButtonsActive = true;
             await RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecRate, config.MoveRaTime);
+            MoveButtonsActive = false;
         }
 
         private async void btDecHigh2_Click(object sender, EventArgs e)
         {
+            MoveButtonsActive = true;
             await RotateAxis(TelescopeAxes.axisSecondary, config.MoveDecRate * config.FastRateMultiplier, config.MoveDecTime * config.FastTimeMultiplier);
+            MoveButtonsActive = false;
         }
 
         private async Task RotateAxis(TelescopeAxes axis, double rate, double time)
@@ -456,10 +410,19 @@ namespace VisualMountParking
                 btPark.Enabled = false;
                 canMove = false;
             }
-            btAutoPark.Enabled = btSTOP.Enabled = canMove;
-            btRaHigh2.Enabled = btRaHigh.Enabled = btRaLow.Enabled = btRaLow2.Enabled = canMove;
-            btDecHigh2.Enabled = btDecHigh.Enabled = btDecLow.Enabled = btDecLow2.Enabled = canMove;
+
+            btSTOP.Enabled = canMove;
+            MoveButtonsEnabled( canMove && !MoveButtonsActive);          
         }
+
+        private void MoveButtonsEnabled(bool enabled)
+        {
+            btAutoPark.Enabled = enabled;
+            btRaHigh2.Enabled = btRaHigh.Enabled = btRaLow.Enabled = btRaLow2.Enabled = enabled;
+            btDecHigh2.Enabled = btDecHigh.Enabled = btDecLow.Enabled = btDecLow2.Enabled = enabled;
+        }
+
+        private bool MoveButtonsActive;
 
         private void SetMoving(bool moving)
         {
@@ -500,6 +463,8 @@ namespace VisualMountParking
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            timerImage.Stop();
+            timerMountStat.Stop();
             _MyTelescope.Disconnect();
         }
 
@@ -527,29 +492,22 @@ namespace VisualMountParking
 
         private async void btAutoPark_Click(object sender, EventArgs e)
         {
-            //// ensure log window is open
-            //if (log != null)
-            //{
-            //    log.Dispose();
-            //    log = null;
-            //}
+            
+            MoveButtonsActive=true;
 
-            //log = new LogForm();
-            //log.Show();
-            //log.Left = this.Right;
-            //log.Top = this.Top;
-
-            btAutoPark.Enabled = false;
+            _CancellationTokenSource?.Cancel();
             _CancellationTokenSource = new CancellationTokenSource();
             try
             {
                 _vpDriver.Logger = LogWriter;
                 var success = await _vpDriver.SlaveToReference(_CancellationTokenSource.Token);
             }
-            catch { }
+            catch (Exception ex)  { 
+                Debug.WriteLine(ex.Message);
+            }
             finally
             {
-                btAutoPark.Enabled = true;
+                MoveButtonsActive = false;
             }
         }
 

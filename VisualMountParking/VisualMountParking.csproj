@@ -72,7 +72,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Camera\CmCamera.cs" />
     <Compile Include="ImageChangedEventArgs.cs" />
     <Compile Include="ImageDecorator.cs" />
     <Compile Include="Markers\ArucoDetector.cs" />
@@ -166,9 +165,6 @@
     </PackageReference>
     <PackageReference Include="Emgu.CV.UI">
       <Version>4.8.1.5350</Version>
-    </PackageReference>
-    <PackageReference Include="FlashCap">
-      <Version>1.10.0</Version>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>

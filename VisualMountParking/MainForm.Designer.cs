@@ -52,8 +52,6 @@
             this.btPark = new System.Windows.Forms.Button();
             this.timerMountStat = new System.Windows.Forms.Timer(this.components);
             this.btAutoPark = new System.Windows.Forms.Button();
-            this.tbLum = new System.Windows.Forms.TrackBar();
-            this.tbContrast = new System.Windows.Forms.TrackBar();
             this.cmbImageToShow = new System.Windows.Forms.ComboBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -61,8 +59,6 @@
             this.cmbReferenceImage = new System.Windows.Forms.ComboBox();
             this.pnlImageBorder = new System.Windows.Forms.Panel();
             ((System.ComponentModel.ISupportInitialize)(this.picCurrent)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbLum)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbContrast)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.pnlImageBorder.SuspendLayout();
             this.SuspendLayout();
@@ -98,7 +94,7 @@
             // btSettings
             // 
             this.btSettings.Image = ((System.Drawing.Image)(resources.GetObject("btSettings.Image")));
-            this.btSettings.Location = new System.Drawing.Point(10, 275);
+            this.btSettings.Location = new System.Drawing.Point(10, 305);
             this.btSettings.Name = "btSettings";
             this.btSettings.Size = new System.Drawing.Size(83, 27);
             this.btSettings.TabIndex = 4;
@@ -109,7 +105,7 @@
             // 
             // btLightON
             // 
-            this.btLightON.Location = new System.Drawing.Point(12, 129);
+            this.btLightON.Location = new System.Drawing.Point(12, 159);
             this.btLightON.Name = "btLightON";
             this.btLightON.Size = new System.Drawing.Size(62, 23);
             this.btLightON.TabIndex = 2;
@@ -119,7 +115,7 @@
             // 
             // btLightOFF
             // 
-            this.btLightOFF.Location = new System.Drawing.Point(12, 158);
+            this.btLightOFF.Location = new System.Drawing.Point(12, 188);
             this.btLightOFF.Name = "btLightOFF";
             this.btLightOFF.Size = new System.Drawing.Size(62, 23);
             this.btLightOFF.TabIndex = 3;
@@ -129,7 +125,7 @@
             // 
             // btRaLow2
             // 
-            this.btRaLow2.Location = new System.Drawing.Point(357, 8);
+            this.btRaLow2.Location = new System.Drawing.Point(289, 8);
             this.btRaLow2.Name = "btRaLow2";
             this.btRaLow2.Size = new System.Drawing.Size(29, 23);
             this.btRaLow2.TabIndex = 7;
@@ -139,7 +135,7 @@
             // 
             // btDecLow2
             // 
-            this.btDecLow2.Location = new System.Drawing.Point(357, 34);
+            this.btDecLow2.Location = new System.Drawing.Point(289, 34);
             this.btDecLow2.Name = "btDecLow2";
             this.btDecLow2.Size = new System.Drawing.Size(29, 23);
             this.btDecLow2.TabIndex = 11;
@@ -150,7 +146,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(317, 13);
+            this.label1.Location = new System.Drawing.Point(249, 13);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(34, 13);
             this.label1.TabIndex = 32;
@@ -159,7 +155,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(315, 39);
+            this.label2.Location = new System.Drawing.Point(247, 39);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(36, 13);
             this.label2.TabIndex = 33;
@@ -167,7 +163,7 @@
             // 
             // btDecLow
             // 
-            this.btDecLow.Location = new System.Drawing.Point(392, 34);
+            this.btDecLow.Location = new System.Drawing.Point(324, 34);
             this.btDecLow.Name = "btDecLow";
             this.btDecLow.Size = new System.Drawing.Size(29, 23);
             this.btDecLow.TabIndex = 12;
@@ -177,7 +173,7 @@
             // 
             // btRaLow
             // 
-            this.btRaLow.Location = new System.Drawing.Point(392, 8);
+            this.btRaLow.Location = new System.Drawing.Point(324, 8);
             this.btRaLow.Name = "btRaLow";
             this.btRaLow.Size = new System.Drawing.Size(29, 23);
             this.btRaLow.TabIndex = 8;
@@ -187,7 +183,7 @@
             // 
             // btDecHigh
             // 
-            this.btDecHigh.Location = new System.Drawing.Point(420, 34);
+            this.btDecHigh.Location = new System.Drawing.Point(352, 34);
             this.btDecHigh.Name = "btDecHigh";
             this.btDecHigh.Size = new System.Drawing.Size(29, 23);
             this.btDecHigh.TabIndex = 13;
@@ -197,7 +193,7 @@
             // 
             // btRaHigh
             // 
-            this.btRaHigh.Location = new System.Drawing.Point(420, 8);
+            this.btRaHigh.Location = new System.Drawing.Point(352, 8);
             this.btRaHigh.Name = "btRaHigh";
             this.btRaHigh.Size = new System.Drawing.Size(29, 23);
             this.btRaHigh.TabIndex = 9;
@@ -207,7 +203,7 @@
             // 
             // btDecHigh2
             // 
-            this.btDecHigh2.Location = new System.Drawing.Point(455, 34);
+            this.btDecHigh2.Location = new System.Drawing.Point(387, 34);
             this.btDecHigh2.Name = "btDecHigh2";
             this.btDecHigh2.Size = new System.Drawing.Size(29, 23);
             this.btDecHigh2.TabIndex = 14;
@@ -217,7 +213,7 @@
             // 
             // btRaHigh2
             // 
-            this.btRaHigh2.Location = new System.Drawing.Point(455, 8);
+            this.btRaHigh2.Location = new System.Drawing.Point(387, 8);
             this.btRaHigh2.Name = "btRaHigh2";
             this.btRaHigh2.Size = new System.Drawing.Size(29, 23);
             this.btRaHigh2.TabIndex = 10;
@@ -227,9 +223,9 @@
             // 
             // btConnect
             // 
-            this.btConnect.Location = new System.Drawing.Point(13, 63);
+            this.btConnect.Location = new System.Drawing.Point(13, 67);
             this.btConnect.Name = "btConnect";
-            this.btConnect.Size = new System.Drawing.Size(71, 23);
+            this.btConnect.Size = new System.Drawing.Size(71, 49);
             this.btConnect.TabIndex = 0;
             this.btConnect.Text = "Connect";
             this.btConnect.UseVisualStyleBackColor = true;
@@ -237,7 +233,7 @@
             // 
             // btSTOP
             // 
-            this.btSTOP.Location = new System.Drawing.Point(568, 8);
+            this.btSTOP.Location = new System.Drawing.Point(500, 8);
             this.btSTOP.Name = "btSTOP";
             this.btSTOP.Size = new System.Drawing.Size(73, 50);
             this.btSTOP.TabIndex = 16;
@@ -262,7 +258,7 @@
             // 
             // btPark
             // 
-            this.btPark.Location = new System.Drawing.Point(13, 92);
+            this.btPark.Location = new System.Drawing.Point(13, 122);
             this.btPark.Name = "btPark";
             this.btPark.Size = new System.Drawing.Size(71, 23);
             this.btPark.TabIndex = 1;
@@ -278,39 +274,13 @@
             // 
             // btAutoPark
             // 
-            this.btAutoPark.Location = new System.Drawing.Point(490, 8);
+            this.btAutoPark.Location = new System.Drawing.Point(422, 8);
             this.btAutoPark.Name = "btAutoPark";
             this.btAutoPark.Size = new System.Drawing.Size(72, 49);
             this.btAutoPark.TabIndex = 15;
             this.btAutoPark.Text = "Slave to Reference";
             this.btAutoPark.UseVisualStyleBackColor = true;
             this.btAutoPark.Click += new System.EventHandler(this.btAutoPark_Click);
-            // 
-            // tbLum
-            // 
-            this.tbLum.LargeChange = 10;
-            this.tbLum.Location = new System.Drawing.Point(15, 8);
-            this.tbLum.Maximum = 100;
-            this.tbLum.Name = "tbLum";
-            this.tbLum.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tbLum.Size = new System.Drawing.Size(45, 53);
-            this.tbLum.TabIndex = 17;
-            this.tbLum.TickFrequency = 25;
-            this.tbLum.Value = 50;
-            this.tbLum.ValueChanged += new System.EventHandler(this.tbLum_ValueChanged);
-            // 
-            // tbContrast
-            // 
-            this.tbContrast.LargeChange = 10;
-            this.tbContrast.Location = new System.Drawing.Point(58, 8);
-            this.tbContrast.Maximum = 100;
-            this.tbContrast.Name = "tbContrast";
-            this.tbContrast.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.tbContrast.Size = new System.Drawing.Size(45, 53);
-            this.tbContrast.TabIndex = 18;
-            this.tbContrast.TickFrequency = 25;
-            this.tbContrast.Value = 50;
-            this.tbContrast.ValueChanged += new System.EventHandler(this.tbContrast_ValueChanged);
             // 
             // cmbImageToShow
             // 
@@ -321,7 +291,7 @@
             "Live all markers",
             "Reference1",
             "Reference2"});
-            this.cmbImageToShow.Location = new System.Drawing.Point(167, 12);
+            this.cmbImageToShow.Location = new System.Drawing.Point(99, 12);
             this.cmbImageToShow.Name = "cmbImageToShow";
             this.cmbImageToShow.Size = new System.Drawing.Size(133, 21);
             this.cmbImageToShow.TabIndex = 5;
@@ -331,7 +301,7 @@
             // 
             this.groupBox1.Controls.Add(this.chkImageSize);
             this.groupBox1.Controls.Add(this.chkFreezeImage);
-            this.groupBox1.Location = new System.Drawing.Point(12, 198);
+            this.groupBox1.Location = new System.Drawing.Point(12, 228);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(81, 71);
             this.groupBox1.TabIndex = 51;
@@ -341,7 +311,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(126, 15);
+            this.label3.Location = new System.Drawing.Point(58, 15);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(37, 13);
             this.label3.TabIndex = 52;
@@ -350,7 +320,7 @@
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(102, 43);
+            this.label4.Location = new System.Drawing.Point(34, 43);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(60, 13);
             this.label4.TabIndex = 54;
@@ -363,7 +333,7 @@
             this.cmbReferenceImage.Items.AddRange(new object[] {
             "Reference1",
             "Reference2"});
-            this.cmbReferenceImage.Location = new System.Drawing.Point(167, 40);
+            this.cmbReferenceImage.Location = new System.Drawing.Point(99, 40);
             this.cmbReferenceImage.Name = "cmbReferenceImage";
             this.cmbReferenceImage.Size = new System.Drawing.Size(133, 21);
             this.cmbReferenceImage.TabIndex = 6;
@@ -407,16 +377,12 @@
             this.Controls.Add(this.btLightON);
             this.Controls.Add(this.btSettings);
             this.Controls.Add(this.btSTOP);
-            this.Controls.Add(this.tbLum);
-            this.Controls.Add(this.tbContrast);
             this.Controls.Add(this.pnlImageBorder);
             this.Name = "MainForm";
             this.Text = "Telescope Visual Parking";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             ((System.ComponentModel.ISupportInitialize)(this.picCurrent)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbLum)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.tbContrast)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.pnlImageBorder.ResumeLayout(false);
@@ -448,8 +414,6 @@
 		private System.Windows.Forms.Button btPark;
 		private System.Windows.Forms.Timer timerMountStat;
 		private System.Windows.Forms.Button btAutoPark;
-		private System.Windows.Forms.TrackBar tbLum;
-		private System.Windows.Forms.TrackBar tbContrast;
         private System.Windows.Forms.ComboBox cmbImageToShow;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Label label3;
