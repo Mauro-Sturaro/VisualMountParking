@@ -120,7 +120,7 @@ namespace VisualMountParking
                 }
                 else
                 {
-                    var maxdelta = 2;
+                    var maxdelta = (double) _Config.PositionTolerance;
                     InRange = ar.GetDistance() <= maxdelta && dec.GetDistance() < maxdelta;
                 }
             });

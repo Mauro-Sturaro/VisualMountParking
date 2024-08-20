@@ -30,17 +30,17 @@ namespace VisualMountParking.Markers
                 throw new Exception("Check EmguCV version, 4.9.1 seems buggy");
 
             //// Regoliamo quali rettangoli vede
-            //ArucoParameters.MinMarkerPerimeterRate = 0.06;
-            //ArucoParameters.MaxMarkerPerimeterRate = 0.1;
-            //ArucoParameters.MinCornerDistanceRate = 0.15;
+            ArucoParameters.MinMarkerPerimeterRate = 0.06;
+            ArucoParameters.MaxMarkerPerimeterRate = 0.1;
+            ArucoParameters.MinCornerDistanceRate = 0.15;
 
-            //// ora la quantizzazione
-            //ArucoParameters.PerspectiveRemovePixelPerCell = 4;
-            //ArucoParameters.PerspectiveRemoveIgnoredMarginPerCell = 0.4;
+            // ora la quantizzazione
+            ArucoParameters.PerspectiveRemovePixelPerCell = 4;
+            ArucoParameters.PerspectiveRemoveIgnoredMarginPerCell = 0.4;
 
-            //// ed infine la robustezza agli errori
-            //ArucoParameters.MaxErroneousBitsInBorderRate = 0.8;
-            //ArucoParameters.ErrorCorrectionRate = 1;
+            // ed infine la robustezza agli errori
+            ArucoParameters.MaxErroneousBitsInBorderRate = 0.8;
+            ArucoParameters.ErrorCorrectionRate = 1;
 
 
             #endregion

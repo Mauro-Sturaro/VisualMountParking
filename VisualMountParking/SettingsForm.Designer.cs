@@ -48,6 +48,7 @@
             this.numRaRrate = new System.Windows.Forms.NumericUpDown();
             this.tabDome = new System.Windows.Forms.TabControl();
             this.tabPageImage = new System.Windows.Forms.TabPage();
+            this.lbl_ImgSize = new System.Windows.Forms.Label();
             this.btSetAsReference2 = new System.Windows.Forms.Button();
             this.label10 = new System.Windows.Forms.Label();
             this.btSetAsReference1 = new System.Windows.Forms.Button();
@@ -389,6 +390,7 @@
             // 
             // tabPageImage
             // 
+            this.tabPageImage.Controls.Add(this.lbl_ImgSize);
             this.tabPageImage.Controls.Add(this.btSetAsReference2);
             this.tabPageImage.Controls.Add(this.label10);
             this.tabPageImage.Controls.Add(this.btSetAsReference1);
@@ -404,6 +406,14 @@
             this.tabPageImage.Size = new System.Drawing.Size(446, 370);
             this.tabPageImage.TabIndex = 0;
             this.tabPageImage.Text = "Image";
+            // 
+            // lbl_ImgSize
+            // 
+            this.lbl_ImgSize.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.lbl_ImgSize.Location = new System.Drawing.Point(341, 309);
+            this.lbl_ImgSize.Name = "lbl_ImgSize";
+            this.lbl_ImgSize.Size = new System.Drawing.Size(97, 43);
+            this.lbl_ImgSize.TabIndex = 34;
             // 
             // btSetAsReference2
             // 
@@ -518,7 +528,7 @@
             this.btSaveMarkers.Name = "btSaveMarkers";
             this.btSaveMarkers.Size = new System.Drawing.Size(124, 33);
             this.btSaveMarkers.TabIndex = 33;
-            this.btSaveMarkers.Text = "Save Markers Image";
+            this.btSaveMarkers.Text = "Save Markers Sheet";
             this.btSaveMarkers.UseVisualStyleBackColor = true;
             this.btSaveMarkers.Click += new System.EventHandler(this.btSaveMarkers_Click);
             // 
@@ -820,5 +830,6 @@
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.TextBox txtAllowedRates;
         private System.Windows.Forms.Button btShowSpeed;
+        private System.Windows.Forms.Label lbl_ImgSize;
     }
 }

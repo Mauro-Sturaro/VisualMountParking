@@ -39,6 +39,7 @@ namespace VisualMountParking
                         picPreview.Image = img;
                         btSetAsReference1.Enabled = true;
                         btSetAsReference2.Enabled = true;
+                        lbl_ImgSize.Text = $"size= {img.Width} x {img.Height}";
                     }
                 }
             }

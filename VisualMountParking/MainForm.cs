@@ -237,7 +237,7 @@ namespace VisualMountParking
                     if (cmbReferenceImage.SelectedIndex == 0)
                         _markersFinder = new MarkerMatchEngine(config.ReferenceImage1);
                     else
-                        _markersFinder = new MarkerMatchEngine(config.ReferenceImage1);
+                        _markersFinder = new MarkerMatchEngine(config.ReferenceImage2);
 
                     _MyTelescope?.Disconnect();
                     _MyTelescope = new MyTelescope();

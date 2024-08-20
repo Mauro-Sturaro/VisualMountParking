@@ -70,7 +70,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.picCurrent.Location = new System.Drawing.Point(10, 10);
             this.picCurrent.Name = "picCurrent";
-            this.picCurrent.Size = new System.Drawing.Size(530, 370);
+            this.picCurrent.Size = new System.Drawing.Size(607, 370);
             this.picCurrent.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.picCurrent.TabIndex = 7;
             this.picCurrent.TabStop = false;
@@ -347,14 +347,14 @@
             this.pnlImageBorder.Controls.Add(this.picCurrent);
             this.pnlImageBorder.Location = new System.Drawing.Point(99, 67);
             this.pnlImageBorder.Name = "pnlImageBorder";
-            this.pnlImageBorder.Size = new System.Drawing.Size(550, 390);
+            this.pnlImageBorder.Size = new System.Drawing.Size(627, 390);
             this.pnlImageBorder.TabIndex = 55;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(651, 459);
+            this.ClientSize = new System.Drawing.Size(728, 459);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.cmbReferenceImage);
             this.Controls.Add(this.label3);
