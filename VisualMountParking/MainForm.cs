@@ -377,10 +377,17 @@ namespace VisualMountParking
 
         private void btConnect_Click(object sender, EventArgs e)
         {
-            if (_MyTelescope.IsTelescopeConnected)
-                _MyTelescope.Disconnect();
-            else
-                _MyTelescope.Connect();
+            try
+            {
+                if (_MyTelescope.IsTelescopeConnected)
+                    _MyTelescope.Disconnect();
+                else
+                    _MyTelescope.Connect();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             UpdateMovementButtons();
         }
 

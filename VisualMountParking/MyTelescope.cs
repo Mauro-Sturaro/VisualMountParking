@@ -20,7 +20,26 @@ namespace VisualMountParking
 
         public MyTelescope() { }
 
-        public bool IsTelescopeConnected => _Telescope != null && _Telescope.Connected;
+        public bool IsTelescopeConnected
+        {
+            get
+            {
+                if (_Telescope == null)
+                    return false;
+                try
+                {
+                    return _Telescope.Connected;
+                }
+                catch (Exception ex)
+                {
+                    // il driver ASCOM può lanciare se la montatura si disconnette a runtime
+                    // (es. persa la porta seriale/rete): trattarlo come "non connesso" invece
+                    // di propagare, dato che questa property è pollata anche da timerMountStat_Tick
+                    Debug.WriteLine($"IsTelescopeConnected: driver threw while reading Connected: {ex}");
+                    return false;
+                }
+            }
+        }
 
         public TelescopeState TelescopeState
         {
@@ -52,8 +71,27 @@ namespace VisualMountParking
                 return;
             if (!string.IsNullOrWhiteSpace(_DriverName))
             {
-                _Telescope = new Telescope(_DriverName);
-                _Telescope.Connected = true;
+                if (_Telescope != null)
+                {
+                    // istanza precedente rimasta agganciata dopo una disconnessione a runtime
+                    // (es. IsTelescopeConnected ha rilevato un errore del driver): scartarla
+                    // senza propagare ulteriori eccezioni, tanto verrà sostituita subito sotto
+                    try { _Telescope.Dispose(); } catch { }
+                    _Telescope = null;
+                }
+                try
+                {
+                    _Telescope = new Telescope(_DriverName);
+                    _Telescope.Connected = true;
+                }
+                catch
+                {
+                    // driver creato ma connessione fallita (es. montatura irraggiungibile):
+                    // non lasciare _Telescope in uno stato sporco, l'errore va al chiamante
+                    _Telescope?.Dispose();
+                    _Telescope = null;
+                    throw;
+                }
             }
 
         }
