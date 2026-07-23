@@ -47,7 +47,7 @@ namespace VisualMountParking
 
         public double FastTimeMultiplier { get; set; }
         public double FastRateMultiplier { get; set; }
-        public decimal PositionTolerance { get; set; }
+        public double PositionTolerance { get; set; }
         #endregion
 
         #region Private Methods

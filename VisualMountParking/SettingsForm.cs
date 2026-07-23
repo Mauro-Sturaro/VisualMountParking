@@ -97,7 +97,7 @@ namespace VisualMountParking
             chkReverseAR.Checked = Config.AutoParkAR.ReverseDirection;
             chkReverseDec.Checked = Config.AutoParkDec.ReverseDirection;
 
-            numPositionTolerance.Value = Config.PositionTolerance;
+            numPositionTolerance.Value = (decimal)Config.PositionTolerance;
 
 
         }
@@ -115,7 +115,7 @@ namespace VisualMountParking
             Config.AutoParkDec.MarkerId = (int)numMarkerIdDec.Value;
             Config.AutoParkAR.ReverseDirection = chkReverseAR.Checked;
             Config.AutoParkDec.ReverseDirection = chkReverseDec.Checked;
-            Config.PositionTolerance = numPositionTolerance.Value;
+            Config.PositionTolerance = (double)numPositionTolerance.Value;
 
         }
 

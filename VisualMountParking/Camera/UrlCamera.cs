@@ -13,7 +13,13 @@ namespace VisualMountParking.Camera
 
         // Un solo HttpClient condiviso: l'immagine viene ricaricata periodicamente (polling),
         // un'istanza per chiamata esaurirebbe le porte TCP disponibili nel lungo periodo.
-        private static readonly HttpClient _httpClient = new HttpClient();
+        // La telecamera Reolink in rete locale usa un certificato self-signed: il bypass della
+        // validazione è scoped a questo HttpClient (unico usato per parlare con la camera),
+        // non a livello di processo come con ServicePointManager.
+        private static readonly HttpClient _httpClient = new HttpClient(new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+        });
 
         string _URL;
 
