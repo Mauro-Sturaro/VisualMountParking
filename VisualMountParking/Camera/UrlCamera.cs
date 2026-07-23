@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -9,6 +10,10 @@ namespace VisualMountParking.Camera
     internal class UrlCamera : ICamera
     {
         // REOLINK Camera WebAPI documentation https://drive.google.com/file/d/15AFMQSMlMdpjL2USPsvYd-J9xWecrEf9/view
+
+        // Un solo HttpClient condiviso: l'immagine viene ricaricata periodicamente (polling),
+        // un'istanza per chiamata esaurirebbe le porte TCP disponibili nel lungo periodo.
+        private static readonly HttpClient _httpClient = new HttpClient();
 
         string _URL;
 
@@ -21,21 +26,18 @@ namespace VisualMountParking.Camera
         {
             try
             {
-                var client = new HttpClient();
-                var response = await client.GetAsync(_URL);
-                var stream = await response.Content.ReadAsStreamAsync();
-                var image = Image.FromStream(stream);
-
-                stream.Flush();
-                stream.Close();
-                client.Dispose();
-
-                if (image is Bitmap)
-                    return (Bitmap)image;
-                return new Bitmap(image);
+                var response = await _httpClient.GetAsync(_URL);
+                using (var stream = await response.Content.ReadAsStreamAsync())
+                using (var image = Image.FromStream(stream))
+                {
+                    if (image is Bitmap bmp)
+                        return (Bitmap)bmp.Clone();
+                    return new Bitmap(image);
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.WriteLine($"UrlCamera.LoadImageAsync failed for '{_URL}': {ex}");
                 return Resources.error;
             }
         }

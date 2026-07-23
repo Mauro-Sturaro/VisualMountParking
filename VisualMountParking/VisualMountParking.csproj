@@ -73,7 +73,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ImageChangedEventArgs.cs" />
-    <Compile Include="ImageDecorator.cs" />
     <Compile Include="Markers\ArucoDetector.cs" />
     <Compile Include="AsyncUtil.cs" />
     <Compile Include="AutoParkSetting.cs" />

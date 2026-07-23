@@ -40,8 +40,9 @@ namespace VisualMountParking
                 _Camera = CameraFactory.Instance.GetCamera(config.CameraName);
                 _Camera.Initialize(config.CameraSettings);
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine($"ConnectCamera failed for '{config.CameraName}': {ex}");
                 _Camera = CameraFactory.Instance.GetCamera("None");
             }
         }
