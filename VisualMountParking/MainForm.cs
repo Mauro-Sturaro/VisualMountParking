@@ -27,6 +27,47 @@ namespace VisualMountParking
         {
             InitializeComponent();
             this.Icon = Resources._2bs_logo;
+            ApplyTheme(Theme.GetSystemTheme());
+        }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            Theme.ApplyDarkTitleBar(this, Theme.Current == AppThemeMode.Dark);
+        }
+
+        private void btThemeToggle_Click(object sender, EventArgs e)
+        {
+            ApplyTheme(Theme.Current == AppThemeMode.Dark ? AppThemeMode.Light : AppThemeMode.Dark);
+        }
+
+        private void ApplyTheme(AppThemeMode mode)
+        {
+            Theme.ApplyColors(this, mode);
+            Theme.ApplyDarkTitleBar(this, mode == AppThemeMode.Dark);
+            UpdateThemeToggleIcon();
+            UpdateImageSizeIcon();
+            pnlImageBorder.BackColor = Theme.Palette.Surface;
+            UpdateMovementButtons();
+        }
+
+        private void UpdateThemeToggleIcon()
+        {
+            var source = Theme.Current == AppThemeMode.Dark ? Resources.moon_icon : Resources.sun_icon;
+            SetTintedIcon(btThemeToggle, source);
+        }
+
+        private void UpdateImageSizeIcon()
+        {
+            var source = chkImageSize.Checked ? Resources.expand : Resources.compress;
+            SetTintedIcon(chkImageSize, source);
+        }
+
+        private static void SetTintedIcon(ButtonBase control, Bitmap source)
+        {
+            var previous = control.Image;
+            control.Image = Theme.Tint(source, Theme.Palette.Text);
+            previous?.Dispose();
         }
 
         private Config config;
@@ -53,7 +94,7 @@ namespace VisualMountParking
             _vpDriver.ImageChanged += _vpDriver_ImageChanged;
 
             await _vpDriver.UpdateImageAndPosition();
-            timerImage.Enabled = !chkFreezeImage.Checked;
+            timerImage.Enabled = true;
         }
 
         private void _vpDriver_ImageChanged(object sender, ImageChangedEventArgs e)
@@ -76,7 +117,7 @@ namespace VisualMountParking
             if(_vpDriver.InRange.HasValue)
              pnlImageBorder.BackColor = _vpDriver.InRange.Value ? Color.DarkSeaGreen:Color.DarkSalmon;
             else
-                pnlImageBorder.BackColor = System.Drawing.SystemColors.Control;
+                pnlImageBorder.BackColor = Theme.Palette.Surface;
         }
 
         private void GetStretch(PictureBox pb, out double stretchX, out double stretchY, out int shiftX, out int shiftY)
@@ -115,8 +156,6 @@ namespace VisualMountParking
 
         private void picCurrent_Paint(object sender, PaintEventArgs e)
         {
-            if (chkFreezeImage.Checked)
-                return;
             if (picCurrent.Image == null)
                 return;
 
@@ -213,16 +252,9 @@ namespace VisualMountParking
 
         private void chkImageSize_CheckedChanged(object sender, EventArgs e)
         {
-            if (chkImageSize.Checked)
-            {
-                picCurrent.SizeMode = PictureBoxSizeMode.Zoom;
-            }
-            else
-            {
-                picCurrent.SizeMode = PictureBoxSizeMode.Normal;
-            }
+            picCurrent.SizeMode = chkImageSize.Checked ? PictureBoxSizeMode.Zoom : PictureBoxSizeMode.Normal;
+            UpdateImageSizeIcon();
             picCurrent.Invalidate();
-
         }
 
         private void btSettings_Click(object sender, EventArgs e)
@@ -394,10 +426,14 @@ namespace VisualMountParking
         private void UpdateMovementButtons()
         {
             bool canMove;
+            var palette = Theme.Palette;
+            bool connected = _MyTelescope != null && _MyTelescope.IsTelescopeConnected;
 
-            if (_MyTelescope.IsTelescopeConnected)
+            if (connected)
             {
                 btConnect.Text = "Disconnect";
+                lblConnectionStatus.Text = "Connected";
+                lblConnectionStatus.ForeColor = palette.Success;
                 btPark.Enabled = true;
                 if (_MyTelescope.TelescopeState == TelescopeState.AtPark)
                 {
@@ -414,12 +450,15 @@ namespace VisualMountParking
             else
             {
                 btConnect.Text = "Connect";
+                lblConnectionStatus.Text = "Disconnected";
+                lblConnectionStatus.ForeColor = palette.TextSecondary;
                 btPark.Enabled = false;
                 canMove = false;
+                SetMoving(false);
             }
 
             btSTOP.Enabled = canMove;
-            MoveButtonsEnabled( canMove && !MoveButtonsActive);          
+            MoveButtonsEnabled( canMove && !MoveButtonsActive);
         }
 
         private void MoveButtonsEnabled(bool enabled)
@@ -433,17 +472,17 @@ namespace VisualMountParking
 
         private void SetMoving(bool moving)
         {
+            var palette = Theme.Palette;
             if (moving)
             {
-                btSTOP.UseVisualStyleBackColor = false;
-                btSTOP.BackColor = Color.Tomato;
+                btSTOP.BackColor = palette.Danger;
+                btSTOP.ForeColor = palette.OnDanger;
             }
             else
             {
-                btSTOP.BackColor = System.Drawing.SystemColors.Control;
-                btSTOP.UseVisualStyleBackColor = true;
+                btSTOP.BackColor = palette.DangerBackground;
+                btSTOP.ForeColor = palette.Danger;
             }
-
         }
 
         private void btCancel_Click(object sender, EventArgs e)
@@ -461,11 +500,6 @@ namespace VisualMountParking
             loading = true;
             await RefreshImage();
             loading = false;
-        }
-
-        private void chkFreezeImage_CheckedChanged(object sender, EventArgs e)
-        {
-            timerImage.Enabled = !chkFreezeImage.Checked;
         }
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
