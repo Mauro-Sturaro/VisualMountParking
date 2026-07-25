@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Threading.Tasks;
 using VisualMountParking.Properties;
@@ -24,8 +25,9 @@ namespace VisualMountParking.Camera
                 return Task.FromResult((Bitmap)image);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Debug.WriteLine($"FileCamera.LoadImageAsync failed for '{_FilePath}': {ex}");
                 return Task.FromResult(Resources.error);
             }
 

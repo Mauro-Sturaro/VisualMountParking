@@ -66,10 +66,12 @@ namespace VisualMountParking.Markers
         {
             var image24 = ConvertTo24bpp(image);
             image.Dispose();
-            var frame = image24.ToMat();
-            AnalyzeFrame(frame, showRejected);
-            var res = frame.ToBitmap();
-            return res;
+            using (var frame = image24.ToMat())
+            {
+                image24.Dispose();
+                AnalyzeFrame(frame, showRejected);
+                return frame.ToBitmap();
+            }
         }
 
         private void AnalyzeFrame(Mat frame, bool showRejected = false)
@@ -77,7 +79,7 @@ namespace VisualMountParking.Markers
             if (!frame.IsEmpty)
             {
                 #region Detect markers on last retrieved frame
-                VectorOfInt ids = new VectorOfInt(); // name/id of the detected markers
+                using (VectorOfInt ids = new VectorOfInt()) // name/id of the detected markers
                 using (VectorOfVectorOfPointF corners = new VectorOfVectorOfPointF()) // corners of the detected marker)
                 using (VectorOfVectorOfPointF rejected = new VectorOfVectorOfPointF()) // rejected contours
                 {
@@ -87,8 +89,8 @@ namespace VisualMountParking.Markers
 
                     if (showRejected)
                     {
-                        VectorOfInt rejectedId = new VectorOfInt(0);
-                        ArucoInvoke.DrawDetectedMarkers(frame, rejected, rejectedId, new MCvScalar(200, 200, 0));
+                        using (VectorOfInt rejectedId = new VectorOfInt(0))
+                            ArucoInvoke.DrawDetectedMarkers(frame, rejected, rejectedId, new MCvScalar(200, 200, 0));
                     }
 
                     // If we detected at least one marker
@@ -185,17 +187,19 @@ namespace VisualMountParking.Markers
         {
             var result = new List<ArucoFind>();
             var image24 = ConvertTo24bpp(image);
-            var frame = image24.ToMat();
-            image24.Dispose();
-
-            // Detect markers  
-            VectorOfInt ids = new VectorOfInt(); // name/id of the detected markers
-            using (VectorOfVectorOfPointF corners = new VectorOfVectorOfPointF()) // corners of the detected marker
+            using (var frame = image24.ToMat())
             {
-                ArucoInvoke.DetectMarkers(frame, ArucoDict, corners, ids, ArucoParameters);
-                for (int i = 0; i < ids.Size; i++)
+                image24.Dispose();
+
+                // Detect markers  
+                using (VectorOfInt ids = new VectorOfInt()) // name/id of the detected markers
+                using (VectorOfVectorOfPointF corners = new VectorOfVectorOfPointF()) // corners of the detected marker
                 {
-                    result.Add(new ArucoFind { Id = ids[i], Position = corners[i][0] });
+                    ArucoInvoke.DetectMarkers(frame, ArucoDict, corners, ids, ArucoParameters);
+                    for (int i = 0; i < ids.Size; i++)
+                    {
+                        result.Add(new ArucoFind { Id = ids[i], Position = corners[i][0] });
+                    }
                 }
             }
             return result;

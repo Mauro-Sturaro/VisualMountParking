@@ -1,4 +1,4 @@
-﻿namespace VisualMountParking
+﻿namespace VisualMountParking.Markers
 {
 	public class MarkerPoint
 	{

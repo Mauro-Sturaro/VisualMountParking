@@ -40,8 +40,9 @@ namespace VisualMountParking
                 _Camera = CameraFactory.Instance.GetCamera(config.CameraName);
                 _Camera.Initialize(config.CameraSettings);
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine($"ConnectCamera failed for '{config.CameraName}': {ex}");
                 _Camera = CameraFactory.Instance.GetCamera("None");
             }
         }
@@ -120,7 +121,7 @@ namespace VisualMountParking
                 }
                 else
                 {
-                    var maxdelta = (double) _Config.PositionTolerance;
+                    var maxdelta = _Config.PositionTolerance;
                     InRange = ar.GetDistance() <= maxdelta && dec.GetDistance() < maxdelta;
                 }
             });

@@ -14,7 +14,17 @@ namespace VisualMountParking
 {
 	internal class WebUtils
 	{
-	
+		// Un solo HttpClient condiviso per tutta la vita dell'applicazione: crearne uno nuovo
+		// ad ogni chiamata esaurisce le porte TCP disponibili nel lungo periodo (l'app fa polling
+		// periodico), vedi https://docs.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient-guidelines
+		// La telecamera Reolink in rete locale usa un certificato self-signed: il bypass della
+		// validazione è scoped a questo HttpClient (unico usato per parlare con la camera),
+		// non a livello di processo come con ServicePointManager.
+		private static readonly HttpClient _httpClient = new HttpClient(new HttpClientHandler
+		{
+			ServerCertificateCustomValidationCallback = (message, cert, chain, sslPolicyErrors) => true
+		});
+
 		private Bitmap LoadFromFile(string source)
 		{
 			var image = Image.FromFile(source);
@@ -25,8 +35,6 @@ namespace VisualMountParking
 
 		public async Task<HttpResponseMessage> RunCommandURIAsync(CommandUri command)
 		{
-			var client = new HttpClient();
-
 			var content = new StringContent(command.Body,
 												Encoding.UTF8,
 												"application/json"); //CONTENT-TYPE header
@@ -34,9 +42,9 @@ namespace VisualMountParking
 			HttpResponseMessage response;
 
 			if (command.CommandVerb == CommandVerb.Get)
-				response = await client.GetAsync(command.Uri);
+				response = await _httpClient.GetAsync(command.Uri);
 			else
-				response = await client.PostAsync(command.Uri, content);
+				response = await _httpClient.PostAsync(command.Uri, content);
 
 
 			return response;

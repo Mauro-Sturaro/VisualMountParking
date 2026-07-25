@@ -26,6 +26,14 @@ namespace VisualMountParking
         public Bitmap ReferenceImage2 { get; set; }
         public string CameraSettings { get; set; }
         public string CameraName { get; set; }
+        public bool? AutosizeImage { get; set; }
+
+        #endregion
+
+        #region UI settings
+
+        // null = no saved preference yet -> follow the OS theme
+        public bool? DarkTheme { get; set; }
 
         #endregion
 
@@ -47,7 +55,7 @@ namespace VisualMountParking
 
         public double FastTimeMultiplier { get; set; }
         public double FastRateMultiplier { get; set; }
-        public decimal PositionTolerance { get; set; }
+        public double PositionTolerance { get; set; }
         #endregion
 
         #region Private Methods
