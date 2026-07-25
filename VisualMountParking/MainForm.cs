@@ -38,7 +38,10 @@ namespace VisualMountParking
 
         private void btThemeToggle_Click(object sender, EventArgs e)
         {
-            ApplyTheme(Theme.Current == AppThemeMode.Dark ? AppThemeMode.Light : AppThemeMode.Dark);
+            var mode = Theme.Current == AppThemeMode.Dark ? AppThemeMode.Light : AppThemeMode.Dark;
+            ApplyTheme(mode);
+            config.DarkTheme = mode == AppThemeMode.Dark;
+            config.Save();
         }
 
         private void ApplyTheme(AppThemeMode mode)
@@ -79,6 +82,10 @@ namespace VisualMountParking
             cmbReferenceImage.SelectedIndex = 0;
 
             config = Config.Load();
+
+            chkImageSize.Checked = config.AutosizeImage ?? true;
+            if (config.DarkTheme.HasValue)
+                ApplyTheme(config.DarkTheme.Value ? AppThemeMode.Dark : AppThemeMode.Light);
 
             _markersFinder = new MarkerMatchEngine(config.ReferenceImage1);
 
@@ -255,6 +262,9 @@ namespace VisualMountParking
             picCurrent.SizeMode = chkImageSize.Checked ? PictureBoxSizeMode.Zoom : PictureBoxSizeMode.Normal;
             UpdateImageSizeIcon();
             picCurrent.Invalidate();
+
+            config.AutosizeImage = chkImageSize.Checked;
+            config.Save();
         }
 
         private void btSettings_Click(object sender, EventArgs e)

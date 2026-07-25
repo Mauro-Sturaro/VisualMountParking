@@ -26,6 +26,14 @@ namespace VisualMountParking
         public Bitmap ReferenceImage2 { get; set; }
         public string CameraSettings { get; set; }
         public string CameraName { get; set; }
+        public bool? AutosizeImage { get; set; }
+
+        #endregion
+
+        #region UI settings
+
+        // null = no saved preference yet -> follow the OS theme
+        public bool? DarkTheme { get; set; }
 
         #endregion
 
