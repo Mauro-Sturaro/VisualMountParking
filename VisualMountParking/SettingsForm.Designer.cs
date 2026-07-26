@@ -46,7 +46,7 @@
             this.label7 = new System.Windows.Forms.Label();
             this.numDecRate = new System.Windows.Forms.NumericUpDown();
             this.numRaRrate = new System.Windows.Forms.NumericUpDown();
-            this.tabDome = new System.Windows.Forms.TabControl();
+            this.tabDome = new VisualMountParking.ThemedTabControl();
             this.tabPageImage = new System.Windows.Forms.TabPage();
             this.lbl_ImgSize = new System.Windows.Forms.Label();
             this.btSetAsReference2 = new System.Windows.Forms.Button();
@@ -106,6 +106,7 @@
             this.btSave.Name = "btSave";
             this.btSave.Size = new System.Drawing.Size(99, 28);
             this.btSave.TabIndex = 22;
+            this.btSave.Tag = "accent";
             this.btSave.Text = "Save and Apply";
             this.btSave.UseVisualStyleBackColor = true;
             this.btSave.Click += new System.EventHandler(this.btSave_Click);
@@ -114,9 +115,9 @@
             // 
             this.btLightOff.Location = new System.Drawing.Point(8, 45);
             this.btLightOff.Name = "btLightOff";
-            this.btLightOff.Size = new System.Drawing.Size(85, 28);
+            this.btLightOff.Size = new System.Drawing.Size(101, 28);
             this.btLightOff.TabIndex = 28;
-            this.btLightOff.Text = "Light OFF cmd";
+            this.btLightOff.Text = "Light OFF";
             this.btLightOff.UseVisualStyleBackColor = true;
             this.btLightOff.Click += new System.EventHandler(this.btLightOff_Click);
             // 
@@ -124,9 +125,9 @@
             // 
             this.btLightOn.Location = new System.Drawing.Point(8, 16);
             this.btLightOn.Name = "btLightOn";
-            this.btLightOn.Size = new System.Drawing.Size(85, 28);
+            this.btLightOn.Size = new System.Drawing.Size(101, 28);
             this.btLightOn.TabIndex = 29;
-            this.btLightOn.Text = "Light ON cmd";
+            this.btLightOn.Text = "Light ON";
             this.btLightOn.UseVisualStyleBackColor = true;
             this.btLightOn.Click += new System.EventHandler(this.btLightOn_Click);
             // 
@@ -377,6 +378,7 @@
             // 
             // tabDome
             // 
+            this.tabDome.Appearance = System.Windows.Forms.TabAppearance.Buttons;
             this.tabDome.Controls.Add(this.tabPageImage);
             this.tabDome.Controls.Add(this.tabPageZone);
             this.tabDome.Controls.Add(this.tabPageTelescope);
@@ -400,10 +402,10 @@
             this.tabPageImage.Controls.Add(this.cmbSourceType);
             this.tabPageImage.Controls.Add(this.picPreview);
             this.tabPageImage.Controls.Add(this.btPreview);
-            this.tabPageImage.Location = new System.Drawing.Point(4, 22);
+            this.tabPageImage.Location = new System.Drawing.Point(4, 25);
             this.tabPageImage.Name = "tabPageImage";
             this.tabPageImage.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageImage.Size = new System.Drawing.Size(446, 370);
+            this.tabPageImage.Size = new System.Drawing.Size(446, 367);
             this.tabPageImage.TabIndex = 0;
             this.tabPageImage.Text = "Image";
             // 
@@ -496,7 +498,7 @@
             this.picPreview.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.picPreview.Location = new System.Drawing.Point(6, 69);
             this.picPreview.Name = "picPreview";
-            this.picPreview.Size = new System.Drawing.Size(329, 295);
+            this.picPreview.Size = new System.Drawing.Size(329, 292);
             this.picPreview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.picPreview.TabIndex = 26;
             this.picPreview.TabStop = false;
@@ -516,9 +518,9 @@
             // 
             this.tabPageZone.Controls.Add(this.btSaveMarkers);
             this.tabPageZone.Controls.Add(this.groupBox2);
-            this.tabPageZone.Location = new System.Drawing.Point(4, 22);
+            this.tabPageZone.Location = new System.Drawing.Point(4, 25);
             this.tabPageZone.Name = "tabPageZone";
-            this.tabPageZone.Size = new System.Drawing.Size(446, 370);
+            this.tabPageZone.Size = new System.Drawing.Size(446, 367);
             this.tabPageZone.TabIndex = 3;
             this.tabPageZone.Text = "Markers";
             // 
@@ -665,9 +667,9 @@
             this.tabPageTelescope.Controls.Add(this.groupBox1);
             this.tabPageTelescope.Controls.Add(this.btTelescopeChoose);
             this.tabPageTelescope.Controls.Add(this.label4);
-            this.tabPageTelescope.Location = new System.Drawing.Point(4, 22);
+            this.tabPageTelescope.Location = new System.Drawing.Point(4, 25);
             this.tabPageTelescope.Name = "tabPageTelescope";
-            this.tabPageTelescope.Size = new System.Drawing.Size(446, 370);
+            this.tabPageTelescope.Size = new System.Drawing.Size(446, 367);
             this.tabPageTelescope.TabIndex = 2;
             this.tabPageTelescope.Text = "Telescope";
             // 
@@ -681,7 +683,7 @@
             this.txtAllowedRates.Name = "txtAllowedRates";
             this.txtAllowedRates.ReadOnly = true;
             this.txtAllowedRates.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtAllowedRates.Size = new System.Drawing.Size(182, 250);
+            this.txtAllowedRates.Size = new System.Drawing.Size(182, 247);
             this.txtAllowedRates.TabIndex = 40;
             // 
             // btShowSpeed
@@ -698,10 +700,10 @@
             // 
             this.tabPageCommands.Controls.Add(this.btLightOn);
             this.tabPageCommands.Controls.Add(this.btLightOff);
-            this.tabPageCommands.Location = new System.Drawing.Point(4, 22);
+            this.tabPageCommands.Location = new System.Drawing.Point(4, 25);
             this.tabPageCommands.Name = "tabPageCommands";
             this.tabPageCommands.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageCommands.Size = new System.Drawing.Size(446, 370);
+            this.tabPageCommands.Size = new System.Drawing.Size(446, 367);
             this.tabPageCommands.TabIndex = 1;
             this.tabPageCommands.Text = "Commands";
             // 
@@ -715,6 +717,7 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(454, 55);
             this.panel1.TabIndex = 40;
+            this.panel1.Tag = "toolbar";
             // 
             // btApply
             // 
@@ -738,6 +741,7 @@
             this.btCancel.TabIndex = 23;
             this.btCancel.Text = "Cancel";
             this.btCancel.UseVisualStyleBackColor = true;
+            this.btCancel.Click += new System.EventHandler(this.btCancel_Click);
             // 
             // SettingsForm
             // 
@@ -799,7 +803,7 @@
 		private System.Windows.Forms.Label label7;
 		private System.Windows.Forms.NumericUpDown numDecRate;
 		private System.Windows.Forms.NumericUpDown numRaRrate;
-		private System.Windows.Forms.TabControl tabDome;
+		private ThemedTabControl tabDome;
 		private System.Windows.Forms.TabPage tabPageCommands;
 		private System.Windows.Forms.TabPage tabPageTelescope;
 		private System.Windows.Forms.TabPage tabPageZone;

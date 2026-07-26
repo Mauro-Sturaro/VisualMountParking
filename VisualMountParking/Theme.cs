@@ -112,7 +112,11 @@ namespace VisualMountParking
                 case CheckBox checkBox:
                     checkBox.FlatStyle = FlatStyle.Flat;
                     checkBox.ForeColor = palette.Text;
-                    checkBox.BackColor = Color.Transparent;
+                    // Transparent lets the checkmark glyph fall back to an opaque white box,
+                    // making a light checkmark invisible in dark mode; give it a solid fill instead.
+                    checkBox.BackColor = palette.Surface;
+                    checkBox.FlatAppearance.BorderColor = palette.Border;
+                    checkBox.FlatAppearance.CheckedBackColor = palette.Surface;
                     break;
                 case Label label:
                     label.ForeColor = palette.Text;
@@ -122,6 +126,31 @@ namespace VisualMountParking
                     comboBox.FlatStyle = FlatStyle.Flat;
                     comboBox.BackColor = palette.Surface;
                     comboBox.ForeColor = palette.Text;
+                    break;
+                case TextBoxBase textBox:
+                    textBox.BackColor = palette.Surface;
+                    textBox.ForeColor = palette.Text;
+                    textBox.BorderStyle = BorderStyle.FixedSingle;
+                    break;
+                case NumericUpDown numericUpDown:
+                    numericUpDown.BackColor = palette.Surface;
+                    numericUpDown.ForeColor = palette.Text;
+                    numericUpDown.BorderStyle = BorderStyle.FixedSingle;
+                    break;
+                case GroupBox groupBox:
+                    groupBox.ForeColor = palette.Text;
+                    groupBox.BackColor = Color.Transparent;
+                    break;
+                case TabControl tabControl:
+                    tabControl.BackColor = palette.Background;
+                    StyleTabControl(tabControl);
+                    break;
+                case TabPage tabPage:
+                    tabPage.BackColor = palette.Background;
+                    tabPage.ForeColor = palette.Text;
+                    break;
+                case PictureBox pictureBox when pictureBox.BorderStyle == BorderStyle.FixedSingle:
+                    pictureBox.BackColor = palette.Surface;
                     break;
                 case Panel panel:
                     switch ((string)(panel.Tag ?? ""))
@@ -171,6 +200,47 @@ namespace VisualMountParking
                     button.FlatAppearance.BorderColor = palette.Border;
                     break;
             }
+        }
+
+        [DllImport("uxtheme.dll", CharSet = CharSet.Unicode)]
+        private static extern int SetWindowTheme(IntPtr hWnd, string pszSubAppName, string pszSubIdList);
+
+        private static void StyleTabControl(TabControl tabControl)
+        {
+            // Visual styles draw a themed page-frame border around the tab body that ignores
+            // BackColor entirely. Stripping the theme from just this control drops that frame;
+            // owner-draw below then fully controls the tab strip and page background. Any
+            // remaining native border margin is handled by ThemedTabControl (see its WndProc)
+            // since TabControl is a native-wrapped control and never raises Control.Paint.
+            SetWindowTheme(tabControl.Handle, "", "");
+            tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
+            tabControl.DrawItem -= TabControl_DrawItem;
+            tabControl.DrawItem += TabControl_DrawItem;
+            tabControl.Invalidate();
+        }
+
+        private static void TabControl_DrawItem(object sender, DrawItemEventArgs e)
+        {
+            var tabControl = (TabControl)sender;
+            var palette = Palette;
+
+            if (e.Index == 0)
+            {
+                var headerRect = new Rectangle(0, 0, tabControl.Width, tabControl.ItemSize.Height + 6);
+                using (var headerBrush = new SolidBrush(palette.Background))
+                    e.Graphics.FillRectangle(headerBrush, headerRect);
+            }
+
+            var tabPage = tabControl.TabPages[e.Index];
+            var tabRect = tabControl.GetTabRect(e.Index);
+            bool selected = e.Index == tabControl.SelectedIndex;
+
+            using (var backBrush = new SolidBrush(selected ? palette.Surface : palette.Background))
+                e.Graphics.FillRectangle(backBrush, tabRect);
+
+            var textColor = selected ? palette.Text : palette.TextSecondary;
+            TextRenderer.DrawText(e.Graphics, tabPage.Text, tabControl.Font, tabRect, textColor,
+                TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
         }
 
         /// Recolors a black-glyph icon (whether on an opaque white background or a

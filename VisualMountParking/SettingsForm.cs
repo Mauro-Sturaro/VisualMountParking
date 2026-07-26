@@ -21,6 +21,14 @@ namespace VisualMountParking
         public SettingsForm()
         {
             InitializeComponent();
+            this.Icon = Properties.Resources._2bs_logo;
+            Theme.ApplyColors(this, Theme.Current);
+        }
+
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+            Theme.ApplyDarkTitleBar(this, Theme.Current == AppThemeMode.Dark);
         }
 
         public Config Config { get; internal set; }
@@ -251,6 +259,11 @@ namespace VisualMountParking
             t.Initialize(txtTelescopeDriver.Text);
             t.Connect();
             txtAllowedRates.Text = t.GetRatesTxt();
+        }
+
+        private void btCancel_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

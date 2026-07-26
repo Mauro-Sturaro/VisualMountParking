@@ -116,6 +116,9 @@
     <Compile Include="ThemedButton.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="ThemedTabControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="SettingsForm.cs">
       <SubType>Form</SubType>
     </Compile>
