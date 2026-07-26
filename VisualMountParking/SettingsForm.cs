@@ -33,7 +33,7 @@ namespace VisualMountParking
                 {
                     camera.Initialize(Config.CameraSettings);
 
-                    var img = AsyncUtil.RunSync(camera.LoadImageAsync);
+                    var img = AsyncUtil.RunSync(() => LoadWithRetryAsync(camera));
                     if (img != null)
                     {
                         picPreview.Image = img;
@@ -48,6 +48,23 @@ namespace VisualMountParking
                 MessageBox.Show(ex.Message, ex.GetType().Name, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
+        }
+
+        // Alcune camere (es. RTSP) si connettono in background e restituiscono subito un
+        // placeholder "in corso": qui aspettiamo un frame vero, altrimenti la Preview (che usa
+        // una camera usa-e-getta) mostrerebbe sempre e solo il placeholder.
+        private static async Task<Bitmap> LoadWithRetryAsync(ICamera camera)
+        {
+            Bitmap img = null;
+            for (int i = 0; i < 40; i++) // ~10 secondi di attesa massima
+            {
+                img?.Dispose();
+                img = await camera.LoadImageAsync();
+                if (!(camera is RtspCamera rtsp) || rtsp.IsReady)
+                    break;
+                await Task.Delay(250);
+            }
+            return img;
         }
 
         private void btSave_Click(object sender, EventArgs e)

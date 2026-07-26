@@ -80,6 +80,7 @@
     <Compile Include="Camera\DummyCamera.cs" />
     <Compile Include="Camera\FileCamera.cs" />
     <Compile Include="Camera\ICamera.cs" />
+    <Compile Include="Camera\RtspCamera.cs" />
     <Compile Include="Camera\UrlCamera.cs" />
     <Compile Include="Camera\Webcam.cs" />
     <Compile Include="CommandUri.cs" />
