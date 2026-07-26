@@ -10,7 +10,7 @@ namespace VisualMountParking.Camera
         public ReadOnlyCollection<string> Names { get; }
         private CameraFactory()
         {
-            var names = new List<string>() { "None", "URL", "File","Webcam", };
+            var names = new List<string>() { "None", "URL", "File","Webcam", "RTSP", };
             Names = names.AsReadOnly();
 
         }
@@ -27,6 +27,8 @@ namespace VisualMountParking.Camera
                     return new FileCamera();
                 case "Webcam":
                     return new Webcam();
+                case "RTSP":
+                    return new RtspCamera();
                 default:
                     throw new ArgumentOutOfRangeException(nameof(name));
             }
